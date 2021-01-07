@@ -1,15 +1,20 @@
-from kivy.metrics import dp
-from kivymd.uix.gridlayout import MDGridLayout
-from kivymd.uix.textfield import MDTextFieldRect
-from kivymd.app import MDApp
-from kivymd.uix.datatables import MDDataTable
-from kivymd.uix.button import MDRectangleFlatButton
-import threading
-from kivy.uix.popup import Popup
-import vlc
-import sqlite3
-import os
 import base64
+import os
+import sqlite3
+import threading
+from datetime import datetime
+
+import vlc
+from kivy.metrics import dp
+from kivy.uix.popup import Popup
+from kivymd.app import MDApp
+from kivymd.theming import ThemeManager
+from kivymd.uix.button import MDIconButton
+from kivymd.uix.button import MDRectangleFlatButton
+from kivymd.uix.datatables import MDDataTable
+from kivymd.uix.gridlayout import MDGridLayout
+from kivymd.uix.label import MDLabel
+from kivymd.uix.textfield import MDTextFieldRect
 
 
 class Database:
@@ -70,21 +75,26 @@ def refresh_table() -> list:
 
 class Radio:
     __total_radios = 0
-    __instance = vlc.Instance('--input-repeat=-1', '--fullscreen')
+    __instance = vlc.Instance()
     __player = __instance.media_player_new()
-    __media = __instance.media_new("")
+    __media = None
 
-    def __init__(self, url):
-        Radio.__media = Radio.__instance.media_new(url)
+    def __init__(self, url, name, record=False):
 
-    @staticmethod
-    def radio_start():
-        Radio.__player.set_media(Radio.__media)
-        Radio.__player.play()
+        if record:
+            self.__media = self.__instance.media_new(
+                url, "sout=#duplicate{dst=file{dst=Radio %s %s.mp3},dst=display}"
+                     % (name, datetime.now().strftime("%d %b %Y - (%H-%M-%S)"))
+            )
+        else:
+            self.__media = self.__instance.media_new(url)
 
-    @staticmethod
-    def radio_stop():
-        Radio.__player.stop()
+    def radio_start(self):
+        self.__player.set_media(self.__media)
+        self.__player.play()
+
+    def radio_stop(self):
+        self.__player.stop()
 
     @staticmethod
     def radio_list(search="Genre", order="Descending"):
@@ -97,25 +107,26 @@ class Radio:
 
 
 class MainLayout(MDGridLayout):
+
     def __init__(self, **kwargs):
         super(MainLayout, self).__init__(**kwargs)
         self.radio_name = self.radio_genre = self.radio_url = self.radio_country = None
         self.radio_play_id = []
         self.cols = 1
         self.get_center_x()
-        self.grid()
+        self.main_layout()
+        self.record = False
         self.table([
-                (
-                    i[0],
-                    i[1],
-                    i[4],
-                    i[3]
-                ) for i in Radio.radio_list()
-            ])
+            (
+                i[0],
+                i[1],
+                i[4],
+                i[3]
+            ) for i in Radio.radio_list()
+        ])
 
-    def grid(self):
-        grid = MDGridLayout(cols=5, padding=10, spacing=10, size_hint=(20, None), height=40, pos_hint={'center_x': 0.5})
-
+    def main_layout(self):
+        grid = MDGridLayout(cols=5, padding=10, spacing=10, size_hint=(20, None), height=40)
         self.radio_name = MDTextFieldRect(hint_text="Name")
         self.radio_url = MDTextFieldRect(hint_text="URL")
         self.radio_genre = MDTextFieldRect(hint_text="Genre")
@@ -130,7 +141,6 @@ class MainLayout(MDGridLayout):
         grid.add_widget(self.radio_url)
         grid.add_widget(add_radio_submit)
         self.add_widget(grid)
-
 
     def table(self, data):
         self.grid = MDGridLayout(padding=10, spacing=10, size_hint=(0.9, 0.6), cols=1)
@@ -170,11 +180,65 @@ class MainLayout(MDGridLayout):
             self.update_table()
         else:
             pass
+    def new_top(self, color=None):
+        if color is None:
+            color = [131 / 255, 223 / 255, 25 / 255, .9]
+        new_top = MDGridLayout(
+            cols=3,
+            adaptive_height=True
+        )
+        new_top.md_bg_color= [200/255, 200/255, 200/255, .7]
+        new_top.add_widget(MDLabel(
+            text="%s " % self.radio_play_id[1],
+            theme_text_color="Custom",
+            halign="right",
+            text_color=[223/255, 102/255, 0, 1],
+            font_style="H5",
+        )
+        )
+        new_top.add_widget(MDIconButton(
+            icon="record",
+            user_font_size="48sp",
+            theme_text_color="Custom",
+            text_color=color,
+            on_press=self.start_record)
+        )
+        new_top.add_widget(MDIconButton(
+            icon="stop",
+            user_font_size="48sp",
+            theme_text_color="Custom",
+            on_press=self.stop_record)
+        )
+        return new_top
 
     def play_radio(self, obj):
         if len(self.radio_play_id) == 3:
             self.popup.dismiss()
-            Radio(self.radio_play_id[2]).radio_start()
+            Radio(self.radio_play_id[2], self.radio_play_id[1]).radio_start()
+            self.clear_widgets()
+            self.add_widget(self.new_top())
+            self.main_layout()
+            self.update_table()
+
+    def start_record(self, obj):
+        if len(self.radio_play_id) > 0:
+            self.clear_widgets()
+            self.add_widget(self.new_top([1,0,0,1]))
+            self.main_layout()
+            self.update_table()
+
+            self.radio = Radio(self.radio_play_id[2], self.radio_play_id[1], record=True)
+            self.radio.radio_start()
+            self.record = True
+
+    def stop_record(self, obj):
+        if self.record:
+            self.clear_widgets()
+            self.add_widget(self.new_top())
+            self.main_layout()
+            self.update_table()
+            self.radio.radio_stop()
+            self.record = False
 
     def show_popup(self, instance_table, instance_row):
 
