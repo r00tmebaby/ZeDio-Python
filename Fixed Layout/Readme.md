@@ -1,6 +1,6 @@
 In this version adding new station option is removed, instead
 two classes to extract radio station streams from TuneIn API
-are added. 
+are added. The automatically generate the data needed for the program, station url, logo, genre and name.
 
 The program uses the generated list of radio stations.
 
