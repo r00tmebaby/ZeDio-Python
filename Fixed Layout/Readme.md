@@ -4,11 +4,15 @@ are added. The automatically generate the data needed for the program, station u
 
 The program uses the generated list of radio stations.
 
+
 Additions:
-    - Record function
-    - Radio logo
+<ul>
+    <li> Record function</li>
+    <li> Radio logo </li>
+</ul>
+
 Display:
-    - Fixed user interface size. Not responsive.
-
-<img src="https://i.gyazo.com/01594c9bfd29dafdd2b2c8dbe742a9d6.png">
-
+<ul>
+    <li> Fixed user interface size. Not responsive</li>
+</ul>
+<img src="https://i.gyazo.com/01594c9bfd29dafdd2b2c8dbe742a9d6.png" alt="">
