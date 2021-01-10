@@ -1,0 +1,87 @@
+1,Absolute 80s,80's,UK,http://tx.planetradio.co.uk/http_live_bauer.php?i=absolute80s.mp3&awparams=loggedin:false&amsparams=playerid:BMUK_tunein,http://cdn-profiles.tunein.com/s117787/images/logoq.jpg
+2,Absolute Classic Rock,Classic Rock,UK,http://tx.planetradio.co.uk/http_live_bauer.php?i=absoluteclassicrock.mp3&awparams=loggedin:false&amsparams=playerid:BMUK_tunein,http://cdn-profiles.tunein.com/s49815/images/logoq.jpg
+3,Absolute  00s,00's Music,UK,http://tx.planetradio.co.uk/http_live_bauer.php?i=absolute00s.mp3&awparams=loggedin:false&amsparams=playerid:BMUK_tunein,http://cdn-profiles.tunein.com/s131272/images/logoq.jpg
+4,Absolute  60s,60's Music,UK,http://tx.planetradio.co.uk/http_live_bauer.php?i=absolute60s.mp3&awparams=loggedin:false&amsparams=playerid:BMUK_tunein,http://cdn-profiles.tunein.com/s150147/images/logoq.jpg
+5,Absolute  70s,70's,UK,http://tx.planetradio.co.uk/http_live_bauer.php?i=absolute70s.mp3&awparams=loggedin:false&amsparams=playerid:BMUK_tunein,http://cdn-profiles.tunein.com/s150148/images/logoq.jpg
+6,Absolute  90s,90's,UK,http://tx.planetradio.co.uk/http_live_bauer.php?i=absolute90s.mp3&awparams=loggedin:false&amsparams=playerid:BMUK_tunein,http://cdn-profiles.tunein.com/s126362/images/logoq.jpg
+7,Amazing ,Indie Music,UK,http://stream.amazingradio.com:8000/stream.mp3,http://cdn-profiles.tunein.com/s105824/images/logoq.png?t=151689
+8,Asianfx,Bhangra,UK,http://91.121.77.158:8492/stream,http://cdn-radiotime-logos.tunein.com/s265660q.png
+9,Awaaz FM 107.4,Classic Hits,UK,http://streaming.m3x.co.uk:8000/;,http://cdn-radiotime-logos.tunein.com/s135671q.png
+10,Biggles FM 104.8,World Music,UK,http://live.audiospace.co/bigglesfm,http://cdn-radiotime-logos.tunein.com/s106233q.png
+11,Capital UK,Top 40 & Pop Music,UK,https://media-ssl.musicradio.com/CapitalUKMP3,http://cdn-profiles.tunein.com/s241396/images/logoq.jpg?t=2
+12,Capital XTRA Reloaded,Hip Hop Music,UK,https://media-ssl.musicradio.com/CapitalXTRAReloadedMP3,http://cdn-profiles.tunein.com/s306339/images/logoq.jpg?t=156715
+13,Capital XTRA UK,Hip Hop Music,UK,https://media-ssl.musicradio.com/CapitalXTRANationalMP3,http://cdn-profiles.tunein.com/s220688/images/logoq.jpg?t=1
+14,chill.,Chill,UK,http://media-ice.musicradio.com/ChillMP3,http://cdn-profiles.tunein.com/s53084/images/logoq.jpg?t=1
+15,Chiltern Voice 87.9,Adult Hits,UK,https://stream.entertainmenttechnologies.co.uk:9004/,http://cdn-profiles.tunein.com/s262389/images/logoq.jpg?t=154393
+16,Chris Country,Country Music,UK,http://ads-direct.sharp-stream.com/chriscountry.mp3,http://cdn-profiles.tunein.com/s196675/images/logoq.jpg?t=154117
+17,Classic FM 100.4,Classical Music,UK,https://media-ssl.musicradio.com/ClassicFMMP3,http://cdn-profiles.tunein.com/s8439/images/logoq.png?t=1
+18,Cross Counties  One,Top 40 & Pop Music,UK,http://149.255.59.162:8094/,http://cdn-radiotime-logos.tunein.com/s118349q.png
+19,Cross Counties  Two,Rock Music,UK,http://149.255.59.162:8092/,http://cdn-radiotime-logos.tunein.com/s199936q.png
+20,DilSe ,Bollywood,UK,https://listen-dilse.sharp-stream.com/1035.mp3,http://cdn-profiles.tunein.com/s305601/images/logoq.png?t=155197
+21,Diverse FM 102.8,Top 40 & Pop Music,UK,https://media-ice.co.uk:8000/DiverseMP3,http://cdn-profiles.tunein.com/s67855/images/logoq.jpg?t=156398
+22,Downtown Country,Country Music,UK,http://tx.planetradio.co.uk/http_live_bauer.php?i=downtowncountry.mp3&awparams=loggedin:false&amsparams=playerid:BMUK_tunein,http://cdn-radiotime-logos.tunein.com/s244231q.png
+23,Fresh West Midlands,Top 40 & Pop Music,UK,https://isla.streamerr.co/proxy/freshwestmidlands?mp=/320mp3,http://cdn-profiles.tunein.com/s274233/images/logoq.png?t=156629
+24,Fun Kids,Children's Topics & Stories,UK,https://listen-funkids.sharp-stream.com/funkids.mp3?device=tunein,http://cdn-profiles.tunein.com/s67862/images/logoq.jpg?t=2
+25,Fun Kids Junior,Children's Music,UK,https://listen-funkids.sharp-stream.com/funkidsjunior.mp3?device=tunein,http://cdn-profiles.tunein.com/s308401/images/logoq.jpg
+26,Gaydio,Dance,UK,https://listen-gaydio.sharp-stream.com/gaydioukhq.mp3,http://cdn-radiotime-logos.tunein.com/s125580q.png
+27,Go  Glasgow,Adult Hits,UK,https://streaming.broadcastradio.com/goradio,http://cdn-profiles.tunein.com/s261612/images/logoq.png?t=158696
+28,Greatest Hits ,Bucks, Beds and Herts,UK,http://tx.planetradio.co.uk/http_live_bauer.php?i=net2aylesbury.mp3&aw_0_1st.playerid=BMUK_tunein,http://cdn-profiles.tunein.com/s45506/images/logoq.jpg?t=1
+29,Hayes FM 91.8,Local Music,UK,http://s19.myradiostream.com:8026/,http://cdn-radiotime-logos.tunein.com/s67864q.png
+30,Heart 90s,90's,UK,https://media-ssl.musicradio.com/Heart90sMP3,http://cdn-profiles.tunein.com/s306317/images/logoq.jpg?t=156696
+31,Heart Beds - Bedford 96.9,Adult Hits,UK,https://media-ssl.musicradio.com/HeartBedfordshireMP3,http://cdn-profiles.tunein.com/s6884/images/logoq.jpg?t=636225
+32,Heart Beds - Luton 97.6,Adult Hits,UK,https://media-ssl.musicradio.com/HeartBedsBucksHertsMP3,http://cdn-profiles.tunein.com/s3096/images/logoq.jpg?t=636225
+33,Heart Essex - Harlow 101.7,Adult Hits,UK,https://media-ssl.musicradio.com/HeartHarlowMP3,http://cdn-profiles.tunein.com/s16662/images/logoq.jpg?t=636225
+34,Heart Milton Keynes 103.3,World Music,UK,https://media-ssl.musicradio.com/HeartMiltonKeynesMP3,http://cdn-profiles.tunein.com/s6900/images/logoq.jpg?t=636225
+35,Heart South Hertfordshire 96.6,Adult Hits,UK,https://media-ssl.musicradio.com/HeartWatfordMP3,http://cdn-profiles.tunein.com/s45528/images/logoq.jpg?t=636225
+36,HEAT RADIO,Variety,UK,http://tx.planetradio.co.uk/http_live_bauer.php?i=heat.mp3&awparams=loggedin:false&amsparams=playerid:BMUK_tunein,http://cdn-radiotime-logos.tunein.com/s97623q.png
+37,Hits ,Top 40 & Pop Music,UK,http://stream.planetradio.co.uk/hit/hi/mp3?player=BMUK_tunein,http://cdn-profiles.tunein.com/s97621/images/logoq.jpg?t=160751
+38,IN2BEATS 106.5,Adult Hits,UK,https://in2radio.co.uk/IN2MP3,http://cdn-radiotime-logos.tunein.com/s149718q.png
+39,Inspire FM 105.1,Islamic Talk,UK,http://radio.canstream.co.uk:8102/live.mp3,http://cdn-profiles.tunein.com/s138069/images/logoq.png?t=154514
+40,Jazz FM,Jazz Music,UK,http://tx.planetradio.co.uk/http_live_bauer.php?i=jazz.mp3&awparams=loggedin:false&amsparams=playerid:BMUK_tunein,http://cdn-profiles.tunein.com/s45300/images/logoq.jpg?t=160977
+41,Kerrang! ,Rock Music,UK,http://tx.planetradio.co.uk/http_live_bauer.php?i=kerrang.mp3&awparams=loggedin:false&amsparams=playerid:BMUK_tunein,http://cdn-profiles.tunein.com/s45579/images/logoq.png?t=160096
+42,KISS FRESH,Hip Hop Music,UK,http://tx.planetradio.co.uk/http_live_bauer.php?i=kissfresh.mp3&awparams=loggedin:false&amsparams=playerid:BMUK_tunein,http://cdn-profiles.tunein.com/s198663/images/logoq.jpg
+43,KISSTORY,Classic Hits,UK,http://tx.planetradio.co.uk/http_live_bauer.php?i=kisstory.mp3&awparams=loggedin:false&amsparams=playerid:BMUK_tunein,http://cdn-radiotime-logos.tunein.com/s77960q.png
+44,L&D  1134,Easy Listening,UK,https://ldradio.dyndns-remote.com:8443/stream,http://cdn-radiotime-logos.tunein.com/s45662q.png
+45,Like , Birmingh,Like Radio, Birmingha,UK,http://87.98.130.255:8469/stream,http://cdn-profiles.tunein.com/s273376/images/logoq.jpg?t=1
+46,Like , Glasgow,Top 40 & Pop Music,UK,http://87.98.130.255:8160/stream,http://cdn-profiles.tunein.com/s259429/images/logoq.jpg?t=1
+47,Like , Hereford,Top 40 & Pop Music,UK,http://87.98.130.255:8050/stream,http://cdn-profiles.tunein.com/s259427/images/logoq.jpg?t=2
+48,Love 80s  Manchester,80's,UK,https://streamingv2.shoutcast.com/love-eighties-radio,http://cdn-radiotime-logos.tunein.com/s273204q.png
+49,Magic Chilled,Adult Hits,UK,http://tx.planetradio.co.uk/http_live_bauer.php?i=magicchilled.mp3&awparams=loggedin:false&amsparams=playerid:BMUK_tunein,http://cdn-profiles.tunein.com/s265899/images/logoq.jpg
+50,Marlow FM 97.5,Local Music,UK,http://audio.marlowfm.co.uk:8126/,http://cdn-profiles.tunein.com/s95889/images/logoq.png?t=158739
+51,Mellow Magic,Adult Hits,UK,http://tx.planetradio.co.uk/http_live_bauer.php?i=magicmellow.mp3&awparams=loggedin:false&amsparams=playerid:BMUK_tunein,http://cdn-profiles.tunein.com/s265898/images/logoq.jpg
+52,Nation  UK,Classic Hits,UK,http://tx.sharp-stream.com/icecast.php?i=thamesradio.mp3,http://cdn-profiles.tunein.com/s45536/images/logoq.png?t=154056
+53,Panjab ,Bhangra,UK,http://s1.voscast.com:7918,http://cdn-radiotime-logos.tunein.com/s6819q.png
+54,Passion for the Planet,Adult Hits,UK,http://184.154.43.106:8061/stream,http://cdn-profiles.tunein.com/s48843/images/logoq.jpg?t=151862
+55,Pirate,Pirate ,UK,http://str1.sad.ukrd.com/pirate-two,http://cdn-radiotime-logos.tunein.com/s228855q.png
+56,Pirate Oldies,Cornwall,UK,http://str1.sad.ukrd.com/mymusicradio-cornwall,http://cdn-radiotime-logos.tunein.com/s255316q.png
+57,Planet Rock,Classic Rock,UK,http://tx.planetradio.co.uk/http_live_bauer.php?i=planetrock.mp3&awparams=loggedin:false&amsparams=playerid:BMUK_tunein,http://cdn-profiles.tunein.com/s2377/images/logoq.png?t=160096
+58,Polish  London,Polish Music,UK,http://stream.zenolive.com/dqvruff96reuv,http://cdn-radiotime-logos.tunein.com/s54018q.png
+59,Premier Praise,Christian Contemporary,UK,https://streams.radiomast.io/4f0fe096-7e2a-4bf0-957f-6c46a866d9ea,http://cdn-profiles.tunein.com/s264828/images/logoq.jpg?t=160226
+60,Proper Sport,Sports Talk & News,UK,http://live.audiospace.co/propersport,http://cdn-profiles.tunein.com/s222405/images/logoq.jpg?t=151790
+61,Pulse Summertime,Top 40 & Pop Music,UK,http://gbradio.cdn.tibus.net/BFDSUN,http://cdn-profiles.tunein.com/s248911/images/logoq.png?t=636337
+62, Caroline,Rock Music,UK,http://sc6.radiocaroline.net:8040/,http://cdn-profiles.tunein.com/s10517/images/logoq.jpg?t=160614
+63, Essex,Top 40 & Pop Music,UK,http://ar.canstream.co.uk:8003/live.mp3,http://cdn-radiotime-logos.tunein.com/s86688q.png
+64, LaB 97.1 FM |,Alternative Rock,UK,http://radio.canstream.co.uk:8043/live.mp3,http://cdn-radiotime-logos.tunein.com/s193445q.png
+65, Verulam 92.6,Easy Listening,UK,https://streamradios.live:2000/stream/92.6FMRadioVerulam,http://cdn-radiotime-logos.tunein.com/s6921q.png
+66, X UK,Indie Rock,UK,https://media-ssl.musicradio.com/RadioXUKMP3,http://cdn-radiotime-logos.tunein.com/s254741q.png
+67,Takbeer High Wycombe 87.9,Islamic Talk,UK,http://comet.shoutca.st:8741/stream,http://cdn-radiotime-logos.tunein.com/s154820q.png
+68,Rainbow  UK,Variety,UK,http://usa6.fastcast4u.com:5374/,http://cdn-profiles.tunein.com/s80778/images/logoq.jpg
+69,Resonance Ext,Resonance Extr,UK,https://stream.resonance.fm/resonance-extra,http://cdn-radiotime-logos.tunein.com/s258658q.png
+70,Sandgrounde,Sandgrounder Radi,UK,http://rss-streaming.co.uk:8038/,http://cdn-radiotime-logos.tunein.com/s0q.png
+71,Scottish Sun 80s,80's,UK,http://gbradio.cdn.tibus.net/80SSUN,http://cdn-profiles.tunein.com/s302826/images/logoq.png?t=151483
+72,Scottish Sun Chilled,Classic Hits,UK,http://gbradio.cdn.tibus.net/SUNGRTHITS,http://cdn-profiles.tunein.com/s302821/images/logoq.png?t=160493
+73,Scottish Sun Hits,Classic Hits,UK,http://gbradio.cdn.tibus.net/SUNHITS,http://cdn-profiles.tunein.com/s302827/images/logoq.png
+74,Signal Summertime,Top 40 & Pop Music,UK,http://gbradio.cdn.tibus.net/STKSUN,http://cdn-profiles.tunein.com/s248910/images/logoq.png?t=636337
+75,Smooth Chill,Chill,UK,https://media-ssl.musicradio.com/SmoothChillMP3,http://cdn-profiles.tunein.com/s308550/images/logoq.jpg
+76,Smooth Herts, Beds and Bucks 792,Easy Listening,UK,https://media-ssl.musicradio.com/SmoothHertsMP3,http://cdn-radiotime-logos.tunein.com/s221129q.png
+77,Smooth UK,Easy Listening,UK,https://media-ssl.musicradio.com/SmoothUKMP3,http://cdn-radiotime-logos.tunein.com/s221117q.png
+78,Solar ,Soul,UK,http://msmn6.co:8330,http://cdn-radiotime-logos.tunein.com/s25233q.png
+79,Stoke Mandeville Hospital  1575,Variety,UK,http://uk5.internet-radio.com:8237/,http://cdn-radiotime-logos.tunein.com/s45703q.png
+80,The Max,Rock Music,UK,https://antares.dribb.com/proxy/maxradio?mp=/stream,http://cdn-profiles.tunein.com/s196618/images/logoq.jpg?t=159615
+81,Trafford Sou,Trafford Soun,UK,http://radio.citrus3.com:9114/,http://cdn-radiotime-logos.tunein.com/s255105q.png
+82,UCB 1,Christian Contemporary,UK,http://direct.sharp-stream.com/ucbuk.mp3,http://cdn-radiotime-logos.tunein.com/s2651q.png
+83,UCB 2,Christian Contemporary,UK,http://direct.sharp-stream.com/ucbinspirational.mp3,http://cdn-radiotime-logos.tunein.com/s6933q.png
+84,Union JACK Dance,Dance & Electronic,UK,http://playerservices.streamtheworld.com/api/livestream-redirect/JACK_RADIO.mp3?DIST=TuneIn&TGT=TuneIn&maxServers=2&tdtok=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImtpZCI6ImZTeXA4In0.eyJpc3MiOiJ0aXNydiIsInN1YiI6IjIxMDY0IiwiaWF0IjoxNjEwMjkyODU4LCJ0ZC1yZWciOmZhbHNlfQ.vVpvr_cl8VdIuksAR4TGqCFbzkuzJNv7Z885PaeD0AE&gdpr_consent=CO_wTxeO_wTxeAcABBENBICsAP_AAH_AACiQHPAAAAIEAABAACBhAIgAAAAAAAAAACAQAAAAAAAAABgAAAAAAAAAAAAAACAAAAgAIAAAAAAAAAAABAAAAAAAAADAAAAAAAEAAABAAAAAAAAAAAAAAIAAAAAAAAAAAAAAgAwAPv__7_f_r-3_3_vp9X---_e_UDnQAAAECAAAgABAggAQAAAAAAAAAABAAAAAAAAAAAAwAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAgAAAA&gdpr=1&partnertok=eyJhbGciOiJIUzI1NiIsImtpZCI6InR1bmVpbiIsInR5cCI6IkpXVCJ9.eyJ0cnVzdGVkX3BhcnRuZXIiOnRydWUsImlhdCI6MTYxMDI5Mjg1OCwiaXNzIjoidGlzcnYifQ.bCDpQ1SPRGo5Z6vp5yKxbI2stOdEWhAfok71Et29G1c,http://cdn-profiles.tunein.com/s251872/images/logoq.png?t=160822
+85,Union JACK Rock,Rock Music,UK,https://playerservices.streamtheworld.com/api/livestream-redirect/UJ_ROCK.mp3?DIST=TuneIn&TGT=TuneIn&maxServers=2&gdpr_consent=CO_wTxeO_wTxeAcABBENBICsAP_AAH_AACiQHPAAAAIEAABAACBhAIgAAAAAAAAAACAQAAAAAAAAABgAAAAAAAAAAAAAACAAAAgAIAAAAAAAAAAABAAAAAAAAADAAAAAAAEAAABAAAAAAAAAAAAAAIAAAAAAAAAAAAAAgAwAPv__7_f_r-3_3_vp9X---_e_UDnQAAAECAAAgABAggAQAAAAAAAAAABAAAAAAAAAAAAwAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAgAAAA&gdpr=1&partnertok=eyJhbGciOiJIUzI1NiIsImtpZCI6InR1bmVpbiIsInR5cCI6IkpXVCJ9.eyJ0cnVzdGVkX3BhcnRuZXIiOnRydWUsImlhdCI6MTYxMDI5Mjg1OSwiaXNzIjoidGlzcnYifQ.JDWV7w5q8V_Inc78DIokEoaCVm_JCmwcZ2tCgBBk5GA,http://cdn-profiles.tunein.com/s251871/images/logoq.png?t=1
+86,Vibe 107.6 FM |,Top 40 & Pop Music,UK,http://145.239.72.186:8001/main,http://cdn-radiotime-logos.tunein.com/s141795q.png
+87,Voice of Isl,Voice of Isla,UK,http://s6.voscast.com:9980,http://cdn-radiotime-logos.tunein.com/s265627q.png
