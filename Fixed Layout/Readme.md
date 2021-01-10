@@ -4,11 +4,13 @@ are added.
 
 The program uses the generated list of radio stations.
 
-<ul>Additions:
-    <li>- Record function</li>
+<b>Additions:</b>
+<ul>
+    <li> Record function</li>
     <li> Radio logo </li>
 </ul>
-<ul>Display:
+<b>Display</b>:
+<ul>
     <li> Fixed user interface size. Not responsive</li>
 </ul>
 <img src="https://i.gyazo.com/01594c9bfd29dafdd2b2c8dbe742a9d6.png">
