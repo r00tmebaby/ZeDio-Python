@@ -1,6 +1,6 @@
 <h2>Simple radio program that can play and record your favourite stations </h2>
 
-<table>
+<table border="0">
   <tr>
     <td><p>
 <b>Using Kivy - Fixed Layout</b><hr>
@@ -12,7 +12,6 @@
 </p></td>
 </tr>
 </table>
-
 
 
 <p>
