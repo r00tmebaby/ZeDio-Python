@@ -16,6 +16,6 @@
 
 <p>
 <b>Using PySimpleGui</b><hr>
-<img src="https://i.gyazo.com/797309adf41eedaf1691484d942c7dba.png">
+<img src="https://i.gyazo.com/a50d63d8533242d7bc90cf14b3bdd771.png">
 </p>
 
