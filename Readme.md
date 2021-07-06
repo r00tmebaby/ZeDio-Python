@@ -16,7 +16,11 @@
 
 <p>
 <b>Using PySimpleGui</b><hr>
-<img src="https://i.gyazo.com/a50d63d8533242d7bc90cf14b3bdd771.png">
-<img src="https://i.gyazo.com/854ef919857a89d9f18164e055c78787.png">
+<table>
+  <tr>
+    <td><img src="https://i.gyazo.com/a50d63d8533242d7bc90cf14b3bdd771.png"></td>
+    <td><img src="https://i.gyazo.com/854ef919857a89d9f18164e055c78787.png"></td>
+  </tr>
+</table>
 </p>
 
