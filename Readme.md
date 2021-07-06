@@ -1,12 +1,8 @@
 <h2>A simple radio program that can play and record your favourite radio stations as well as youtube live streams </h2>
 
 
-<video width="320" height="240" controls>
-  <source src="movie.mp4" type="video/mp4">
-  <source src="movie.ogg" type="video/ogg">
-  Your browser does not support the video tag.
-</video>
-<video src="https://vimeo.com/571840927"></video>
+
+Video: https://vimeo.com/571840927
 
 <p>
 <b>Using PySimpleGui</b><hr>
