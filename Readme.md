@@ -1,4 +1,4 @@
-<h2>Simple radio program that can play and record your favourite stations </h2>
+<h2>Simple radio program that can play and record your favourite radio statoins as well as youtube live streams </h2>
 
 <table border="0">
   <tr>
