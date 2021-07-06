@@ -1,194 +1,571 @@
-import threading
-from PySimpleGUI import PySimpleGUI as sg
-import vlc
-import sqlite3
-import os
-import base64
+import os.path
+import shutil
+import time
+from datetime import datetime
+import configparser
+import PySimpleGUI
+import PySimpleGUI as sg
 
-sg.theme("DarkGrey")
+import pafy
+import requests
+import images
+from sys import platform as PLATFORM
 
+pafy.backend = "youtube-dl"
 
-class Database:
-    __lock = threading.Lock()
-
-    __connection = None
-    __session = None
-    __database = None
-
-    def __init__(self, database):
-        self.__database = os.path.join(os.getcwd(), database)
-
-    def _open(self):
-        try:
-            cnx = sqlite3.connect(self.__database)
-            self.__connection = cnx
-            self.__session = cnx.cursor()
-        except:
-            sg.popup_error("Database file %s can not be connected" % self.__database)
-
-    def _close(self):
-        self.__session.close()
-        self.__connection.close()
-
-    def query(self, query: str, query_type: int = 0, args=None) -> object:
-        if args is None:
-            args = []
-        self.__lock.acquire(True)
-        self._open()
-        if query_type == 1:
-            self.__session.execute(query, args)
-            self.__connection.commit()
-            result = self.__session.lastrowid
-        else:
-            self.__session.execute(query)
-            self.__connection.commit()
-            result = self.__session.fetchall()
-        self._close()
-        self.__lock.release()
-        return result
-
-
-connection = Database("radio.db")
-
-
-def encode(text: str):
-    conv_bytes = bytes(text, 'utf-8')
-    return base64.b64encode(conv_bytes)
-
-
-def decode(text: str) -> str:
-    return base64.b64decode(text).decode()
-
-
-def refresh_table() -> list:
-    return [[i[1], i[3], i[4]] for i in Radio.radio_list()]
-
-
-class Radio:
-    __total_radios = 0
-    __instance = vlc.Instance('--input-repeat=-1', '--fullscreen')
-    __player = __instance.media_player_new()
-    __media = __instance.media_new("")
-
-    def __init__(self, url):
-        Radio.__media = Radio.__instance.media_new(url)
-
-    @staticmethod
-    def radio_start():
-        Radio.__player.set_media(Radio.__media)
-        Radio.__player.play()
-
-    @staticmethod
-    def radio_stop():
-        Radio.__player.stop()
-
-    @staticmethod
-    def radio_list(search="Genre", order="Descending"):
-        Radio.__total_radios = connection.query("Select count(id) from radios")[0][0]
-        order = "desc" if order == "Descending" else "asc"
-        search = search.lower()
-        return [["", "", "", "", ""]] if Radio.__total_radios == 0 else \
-            [[i[0], decode(i[1]), decode(i[2]), decode(i[3]), decode(i[4])] for i in
-             connection.query(f"Select * from radios order by {search} {order}")]
-
-
-layout = [
-    [
-        sg.Col([
-            [sg.Col([
-                [sg.Frame("Currently Playing", [
-                    [sg.T(" - ", key="_now_playing_", size=(49, 1), justification="left", font="Arial, 12"),
-                     sg.B("Stop", key="_stop_radio_", visible=False, size=(5, 1))]],element_justification="left",
-                          )]
-            ], justification="left"),
-                sg.Col([
-                    [sg.Frame("Filter", layout=[
-                        [
-                            sg.T("Sort by"),
-                            sg.DropDown(["Name", "Country", "Genre"], key="_sort_by_", default_value="Genre",
-                                        readonly=True),
-                            sg.T("Order by"),
-                            sg.DropDown(["Descending", "Ascending"], key="_order_by_", default_value="Descending",
-                                        readonly=True),
-                            sg.B("Sort", key="_filter_button_")
-                        ]
-                    ], element_justification="right")],
-                ], justification="right")],
-
-            [sg.Table(
-                font=("Ärial, 14"),
-                values=[[i[1], i[3], i[4]] for i in Radio.radio_list()],
-                bind_return_key=True,
-                justification="left",
-                key="_radios_list_",
-                headings=["                 Name                   ", "     Country      ", "     Genre     "])
-            ],
-            [sg.Frame("Add New Station", layout=[
-                [
-                    sg.T("Name"), sg.I(size=(13, 1)),
-                    sg.T("URL"), sg.I(size=(35, 1)),
-                    sg.T("Country"), sg.I(size=(13, 1)),
-                    sg.T("Genre"), sg.I(size=(13, 1)),
-                    sg.B(
-                        "Add",
-                        key="_add_new_radio_",
-                        button_color=sg.theme_button_color(),
-                        size=(10, 1)), ]
-            ], pad=(5, 15))],
-        ], justification="center")
-    ]
+dirs = ["Download", "Settings"]
+band_params = ["30Hz", "60Hz", "125Hz", "250Hz", "500Hz", "1Khz", "2Khz", "4Khz", "8Khz", "16Khz"]
+vlc_dlls = [
+    ["win", os.environ['WINDIR'] + "\\System32\\", ["libvlc.dll", "libvlccore.dll", "axvlc.dll"]],
+    # ["darwin", os.environ['DARWIN'] + "\\System32\\", ["lib\\libvlc.dylib", "lib\libvlccore.dll"]],
+]
+preset_equalizers = [
+    ["Flat", [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]],
+    ["Acoustic", [14, 14, 12, 10, 11, 11, 12, 12, 12, 11]],
+    ["Electronic", [16, 16, 13, 10, 8, 11, 10, 10, 12, 15]],
+    ["Latino", [13, 12, 10, 10, 8, 8, 8, 10, 12, 15]],
+    ["Piano", [12, 12, 10, 12, 12, 10, 12, 12, 13, 13]],
+    ["Pop", [8, 8, 10, 11, 13, 13, 12, 10, 9, 9]],
+    ["Rock", [15, 14, 13, 12, 10, 10, 11, 12, 13, 14]],
+    ["Bass Booster", [20, 17, 11, 8, 0, 5, 9, 10, 13, 13]],
+    ["Zedio", [20, 10, 5, 7, 9, 13, 16, 13, 16, 20]]
 ]
 
-window = sg.Window(
-    "ZED Radio @r00tme",
+def get_list(string: str):
+    check = string.split(",")
+    return check if len(check) == 10 else [10 for i in range(10)]
+
+
+def convert_bytes(num):
+    """
+    this function will convert bytes to MB.... GB... etc
+    """
+    for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
+        if num < 1024.0:
+            return "%3.1f %s" % (num, x)
+        num /= 1024.0
+
+
+def file_size(file_path):
+    """
+    this function will return the file size
+    """
+    if os.path.isfile(file_path):
+        file_info = os.stat(file_path)
+        return convert_bytes(file_info.st_size)
+
+
+def create_directories():
+    for each_dir in dirs:
+        if not os.path.isdir(each_dir):
+            os.mkdir(each_dir)
+    settings_file = os.path.join(dirs[1], "settings.ini")
+    default_settings = """[Settings]
+radio_list = https://radio.zdpainters.com/radio.txt
+theme= DarkGrey13
+saved_equalizer = 10,10,10,10,10,10,10,10,10,10
+    """
+    if not os.path.isfile(settings_file):
+        with open(settings_file, "a+") as set_file:
+            set_file.write(default_settings)
+
+    for i in range(len(vlc_dlls)):
+        if PLATFORM.startswith(vlc_dlls[i][0]):
+            try:
+                shutil.copytree("vlc/plugins", vlc_dlls[i][1])
+            except FileExistsError:
+                pass
+            for each_dll in vlc_dlls[i][2]:
+                if not os.path.isfile(os.path.join(vlc_dlls[i][1], each_dll)):
+                    shutil.copy(os.path.join("vlc", each_dll), vlc_dlls[i][1])
+
+
+create_directories()
+config = configparser.ConfigParser(inline_comment_prefixes="#")
+config.read(os.path.join(dirs[1], "settings.ini"))
+sg.theme(config.get("Settings", "theme"))
+
+import vlc
+
+
+def name(array: list) -> str:
+    return array[0]
+
+
+def genre(array: list) -> str:
+    return array[1]
+
+
+def country(array: list) -> str:
+    return array[2]
+
+
+def get_records() -> list:
+    files = os.listdir(dirs[0])
+    files_data = []
+    for each_file in files:
+        data = each_file.split(".")[0].split("-")
+        if len(data) == 5:
+            files_data.append([data[0], data[1], data[2], data[3], data[4], each_file])
+    files_data.sort(reverse=True)
+    if len(files_data) == 0:
+        return [["" for i in range(3)]]
+    else:
+        return [[
+            files_data[i][0],
+            "%s:%s:%s" % (files_data[i][2], files_data[i][3], files_data[i][4]),
+            files_data[i][1],
+            os.path.join(dirs[0], files_data[i][5]),
+            file_size(os.path.join(dirs[0], files_data[i][5]))
+        ] for i in range(len(files_data))]
+
+
+class Radios:
+    all_list = []
+    temporary_list = []
+
+    def __init__(self, file_path: str, remote=True):
+        temp_radio_list = []
+        if remote:
+            try:
+                rows = requests.get(file_path).text.split("\n")
+            except FileExistsError:
+                raise FileExistsError("Radios url does not exist or can not be accessed")
+        else:
+            if os.path.isfile(os.path.join(dirs[1], file_path)):
+                with open(os.path.join(dirs[1], file_path), "r") as file:
+                    rows = file.readlines()
+            else:
+                raise FileExistsError("Favourites file does not exist")
+        for i in rows:
+            if len(i.strip()) > 0:
+                cols = i.split(",")
+                if len(cols) == 5:
+                    temp_radio_list.append(cols)
+
+        self.all_list = temp_radio_list
+        self.temporary_list = self.all_list.sort(key=genre)
+
+    def filter(self, st_filter: str = "") -> None:
+        """
+        Use the search field to sort the temporary list by names
+
+        :param st_filter: Reads the search field from the GUI and sort the table based on the string
+
+        """
+        if len(st_filter.strip()) > 0:
+            self.temporary_list = [self.all_list[i] for i in range(len(self.all_list)) if
+                                   st_filter.lower() in self.all_list[i][0].lower()]
+        else:
+            self.temporary_list = [self.all_list[i] for i in range(len(self.all_list))]
+
+
+radios = Radios(config.get("Settings", "radio_list"))
+fav_radios = Radios("favourites.dat", remote=False)
+fav_radios.filter()
+radios.filter()
+
+fav_layout = [[sg.Col(layout=[
+    [sg.Table(
+        font="Arial, 14",
+        values=[[i[0], i[1], i[2]] for i in fav_radios.temporary_list]
+        if len(fav_radios.temporary_list) > 0
+        else [["", "", ""]],
+        justification="left",
+        key="_fav_radios_list_",
+        row_height=30,
+        right_click_menu=["&koko", [' - Remove from favourites']],
+        bind_return_key=True,
+        num_rows=20,
+        headings=["Name                ", "Genre        ", "Country     "])
+    ]
+], justification="center", size=(700, 700))]]
+
+records_layout = [[sg.Col(layout=[
+    [sg.Table(
+        font="Arial, 14",
+        values=[[get_records()[i][k] for k in range(len(get_records()[i]))] for i in range(len(get_records()))],
+        justification="left",
+        key="_records_list_",
+        row_height=30,
+        right_click_menu=["&koko", ['Refresh', 'Open Location', 'Delete record']],
+        bind_return_key=True,
+        num_rows=20,
+        headings=["Radio              ", "Time        ", "Date          "])
+    ]
+], justification="center", size=(700, 700))]]
+
+equalizer_layout = [sg.Col(layout=[
+    [sg.Frame("Equalizer", layout=[
+        [sg.Col([[
+            sg.T("Preset EQ"),
+            sg.DropDown(
+                values=[preset_equalizers[i][0] for i, values in enumerate(preset_equalizers)],
+                readonly=True,
+                change_submits=True,
+                bind_return_key=True,
+                enable_events=True,
+                key="_equalizer_preset_",
+                size=(20, 1),
+                default_value="Flat")
+        ]]),
+            sg.B("Save", key="_save_equalizer_"),
+            sg.B("Load", key="_load_equalizer_"),
+        ],
+        [sg.Frame(band_params[i], layout=[
+            [sg.Slider(
+                range=(0, 20),
+                size=(10, 15),
+                default_value=float(get_list(config.get("Settings", "saved_equalizer"))[i]),
+                orientation="v",
+                change_submits=True,
+                text_color="#00A615",
+                font="Helvetica, 11",
+                pad=(2, 2),
+                key="_eq_band_%s" % i)]
+        ], pad=(5, 10), background_color="#037080", font="Helvetica, 8") for i in range(10)
+         ]
+    ], size=(100, 20), element_justification="center", background_color="#282A2F", pad=(10, 10))]
+], justification="center", element_justification="center", pad=(10, 10))]
+
+play_layout = [[sg.Col([
+    [sg.Col(
+        [[sg.Image(data=images.zedio, key="_radio_logo_", size=(150, 150))]],
+        size=(165, 165), background_color="#282A2F"),
+        sg.Col([
+            [sg.Col([[sg.Frame("Currently Playing", [
+                [
+                    sg.Canvas(key="_radio_spectrum_", size=(20, 15)),
+                    sg.T(" - ", key="_now_playing_", size=(27, 1), justification="left", font="Arial, 14",
+                         text_color="#1D95A7"),
+                    sg.B(image_data=images.record, key="_record_radio_", button_color=("#E5E5E5", "#81352A"),
+                         disabled=True, size=(5, 1)),
+                    sg.B(image_data=images.stop, key="_stop_radio_", button_color=("#E5E5E5", "#000"), disabled=True,
+                         size=(5, 1))
+                ]], element_justification="left")]], justification="left", element_justification="left")],
+            [sg.Col([
+                [sg.Frame("Filter", layout=[[
+                    sg.I(key="_search_name_", size=(20, 1)),
+                    sg.T("Sort by"),
+                    sg.DropDown(
+                        ["Name", "Genre", "Country"],
+                        key="_sort_by_",
+                        size=(7, 1),
+                        default_value="Genre",
+                        change_submits=True,
+                        readonly=True
+                    ),
+                    sg.T("Order by"),
+                    sg.DropDown(
+                        ["Desc", "Asc"],
+                        key="_order_by_",
+                        change_submits=True,
+                        size=(6, 1),
+                        default_value="Desc",
+                        readonly=True
+                    )]
+                ])]])
+            ],
+        ], element_justification="left", justification="left")],
+
+    [sg.Col(layout=[
+        [sg.Table(
+            font="Arial, 14",
+            values=[[i[0], i[1], i[2]] for i in radios.temporary_list],
+            bind_return_key=True,
+            justification="left",
+            key="_radios_list_",
+            row_height=30,
+            num_rows=40,
+            headings=["Name", "Genre", "Country"])
+        ]
+    ])],
+], element_justification="center")]]
+
+tabs = [[sg.TabGroup(layout=[[
+    sg.Tab(title="Player", layout=play_layout),
+    sg.Tab(title="Favourites", layout=fav_layout),
+    sg.Tab(title="Records", layout=records_layout),
+    sg.Tab(title="Settings", layout=[equalizer_layout])
+]])]]
+
+gui_window = sg.Window(
+    "ZEDiO     🎧 v0.4 @r00tme   🕑 13/06/2021     ",
     text_justification="center",
     auto_size_text=True,
     return_keyboard_events=True,
     keep_on_top=True,
     icon="ico.ico",
+    right_click_menu=["&koko", [' ➕  Add to favourites']],
     alpha_channel=0.9,
+    size=(670, 700),
     use_default_focus=True,
 
-).Layout(layout)
+).Layout(tabs).finalize()
+
+
+def save_equalizer(values: sg.ObjToString) -> None:
+    """
+    Reads the equalizer settings from GUI and save them in the settings.ini
+    :param values: GUI event object
+    """
+    new_eq = ""
+    coma = ","
+    for i in range(10):
+        if i == 9:
+            coma = ""
+        new_eq += "%s%s" % (int(values["_eq_band_%s" % i]), coma)
+    config.set(dirs[1], "saved_equalizer", new_eq)
+    with open(os.path.join(dirs[1], "settings.ini"), 'w') as configfile:
+        config.write(configfile)
+
+
+def play_radio(values_str: str) -> None:
+    """
+    Plays the selected radio and updates the main gui buttons
+    :param values_str: GUI event object
+    """
+
+    image_index = 4
+
+    if "_fav" in values_str:
+        Media.selected_radio = fav_radios.temporary_list[values[values_str][0]]
+    elif "_rec" in values_str:
+        Media.selected_radio = get_records()[values[values_str][0]]
+        Media.selected_radio.append(
+            [radios.temporary_list[i][4] for i in range(len(radios.temporary_list))
+             if Media.selected_radio[0] == radios.temporary_list[i][0]]
+        )
+        image_index = 5
+    elif "_rad" in values_str:
+        Media.selected_radio = radios.temporary_list[values[values_str][0]]
+
+    play.refresh()
+    play.current = Media(Media.selected_radio[3])
+    play.current.radio_start()
+
+    gui_window['_radio_logo_'].update(data=play.current.selected_radio[image_index])
+    gui_window['_now_playing_'].update("%s" % play.current.song)
+    gui_window.find_element("_now_playing_").Update(text_color="#1D95A7")
+    gui_window.find_element("_stop_radio_").Update(disabled=False)
+    gui_window.find_element("_record_radio_").Update(disabled=False)
+
+
+class Media:
+    __instance = vlc.Instance("--verbose=0 --audio-visual=visual --no-xlib")
+    if __instance is not None:
+        __player = __instance.media_player_new()
+    __media = None
+    __url = None
+    __record = False
+    __flat_file = False
+
+    band_count = vlc.libvlc_audio_equalizer_get_band_count()
+    selected_radio = None
+    v_player = None
+    song = "..."
+
+    def __init__(self, url: str, record=False, flat_file=False):
+        """
+        :param url: string -> Video or audio link
+        :param record: bool -> Switch to record or play functionality
+        """
+        if record:
+            if not os.path.isdir(dirs[0]):
+                os.mkdir(dirs[0])
+            self.__media = self.__instance.media_new(
+                url.strip(), "sout=#duplicate{dst=file{dst=" + dirs[0] + "/%s-%s.mp3},dst=display}"
+                             % (self.selected_radio[0], datetime.now().strftime("%d %b %Y-%H-%M-%S"))
+            )
+        else:
+            self.__media = self.__instance.media_new(url.strip())
+
+        self.__flat_file = flat_file
+        self.__url = url
+        self.__record = record
+
+    def radio_start(self) -> None:
+        """
+        Start playing the chosen link
+        Checks the current platform and switch the method to add the spectrum equalizer into the GUI
+        Checks the current platform and switch the method to change the logo image
+        Checks the file metadata and saves it in the instance variable song
+        Checks the link and switch the players if it is a video
+        """
+        self.radio_stop()
+        if not self.__flat_file:
+            if "youtube" in self.selected_radio[3].lower():
+                audio = pafy.new(self.__url)
+                best = audio.getbest()
+                self.v_player = vlc.MediaPlayer(best.url, "--verbose=0  --no-xlib")
+
+                if PLATFORM.startswith('linux'):
+                    self.v_player.set_xwindow(gui_window['_radio_logo_'].Widget.winfo_id())
+                else:
+                    self.v_player.set_hwnd(gui_window['_radio_logo_'].Widget.winfo_id())
+                self.v_player.play()
+                self.song = audio.author
+
+            else:
+                if PLATFORM.startswith('linux'):
+                    self.__player.set_xwindow(gui_window['_radio_spectrum_'].Widget.winfo_id())
+                else:
+                    self.__player.set_hwnd(gui_window['_radio_spectrum_'].Widget.winfo_id())
+                self.__player.set_media(self.__media)
+                self.__player.play()
+                self.__media.get_mrl()
+                self.__media.parse()
+                time.sleep(0.2)
+                self.song = self.selected_radio[0] if self.__media.get_meta(12) is None else self.__media.get_meta(12)
+        else:
+            print(self.selected_radio)
+
+    def set_equalizer(self, equalizer_amp=None) -> None:
+        """
+        Set Equalizer set 10 scale parametric equalizer to the player in real time
+        Possible range 30hz-16khz with -20 to 20 scale amplification
+
+        @parameter: equalizer_amp of type list of 10 integers in range -20 to 20
+        30  60  125 250 500  1000  2000  4000  8000  16000     in Hertz
+        [0,  0,    0,    0,    0,     0,      0,       0,        0,        0   ]   amplification from -20 to 20
+
+        """
+
+        if equalizer_amp is None:
+            equalizer_amp = [0 for i in range(10)]
+
+        equalizer_freq = []
+        equalizer_band = vlc.libvlc_audio_equalizer_get_band_count()
+        equalizer = vlc.AudioEqualizer()
+        for band_id in range(equalizer_band):
+            try:
+                amp = equalizer_amp[band_id]
+            except IndexError:
+                amp = 0
+            equalizer.set_amp_at_index(amp, band_id)
+            equalizer_freq.append(vlc.libvlc_audio_equalizer_get_band_frequency(band_id))
+
+        if self.v_player is not None:
+            self.v_player.set_equalizer(equalizer)
+        elif self.__player is not None:
+            self.__player.set_equalizer(equalizer)
+
+    def radio_stop(self) -> None:
+        """Stops the currently playing radio"""
+        self.__player.stop()
+        if self.v_player is not None:
+            self.v_player.stop()
+
+
+class Play:
+    """
+    Keeps the currently playing instance
+    """
+    current = None
+
+    def refresh(self) -> None:
+        if self.current is not None:
+            self.current.radio_stop()
+
+
+play = Play()
+
+if config.getint("Settings", "first_run") == 1:
+    os.startfile("install.cmd")
+    config.set("Settings", "first_run", "0")
+    with open(os.path.join(dirs[1], "settings.ini"), 'w') as configfile:
+        config.write(configfile)
 
 while True:
-    event, values = window.Read()
+    event, values = gui_window.Read()
+
     if event == sg.WIN_CLOSED:
-        window.Close()
-        exit()
+        gui_window.Close()
+        break
+    try:
+        gui_window.find_element("_radios_list_").Update(radios.filter(values['_search_name_']))
+    except PySimpleGUI.ErrorElement:
+        continue
+    if play.current is not None and (event == "_equalizer_preset_" or '_eq_band' in event):
+        play.current.set_equalizer([values['_eq_band_%s' % i] for i in range(10)])
+    if event == "_equalizer_preset_":
+        get_equalizer = [preset_equalizers[i][1] for i in range(len(preset_equalizers)) if
+                         preset_equalizers[i][0] == values['_equalizer_preset_']][0]
+        for i, res in enumerate(get_equalizer):
+            gui_window['_eq_band_%s' % i].update(int(res))
 
-    if event == "_add_new_radio_":
-        if len(values[0].strip()) == 0 or len(values[1].strip()) == 0 or len(values[2].strip()) == 0:
-            sg.popup_error("All fields are required", keep_on_top=True)
-            continue
-        connection.query(f"Insert into radios (name, url, country, genre) values (?, ? , ?, ?)", 1,
-                         [
-                             encode(values[0]),
-                             encode(values[1]),
-                             encode(values[2]),
-                             encode(values[3]),
-                         ]
-                         )
-        window.find_element("_radios_list_").Update(refresh_table())
-    elif event == "Delete:46":
-        for i in values["_radios_list_"]:
-            connection.query("Delete from radios where id = ?", 1, [Radio.radio_list()[i][0]])
-        window.find_element("_radios_list_").Update(refresh_table())
+    if values['_sort_by_'] == "Genre":
+        radios.temporary_list.sort(key=genre)
+    elif values['_sort_by_'] == "Country":
+        radios.temporary_list.sort(key=country)
+    elif values['_sort_by_'] == "Name":
+        radios.temporary_list.sort(key=name)
+
+    radios.temporary_list = radios.temporary_list if values['_order_by_'] == "Desc" else radios.temporary_list[::-1]
+    gui_window['_radios_list_'].update([[i[0], i[1], i[2]] for i in radios.temporary_list])
+
+    if event == "_fav_radios_list_" and len(values["_fav_radios_list_"]) == 1 and fav_radios.temporary_list:
+        play_radio("_fav_radios_list_")
     elif event == "_radios_list_" and len(values["_radios_list_"]) == 1:
-        selected_radio = Radio.radio_list(values["_sort_by_"], values["_order_by_"])[values['_radios_list_'][0]]
-        if len(selected_radio[1].strip()) > 0:
-            Radio(selected_radio[2]).radio_start()
-            window.FindElement("_now_playing_").Update("%s " % selected_radio[1])
-            if event == "_radios_list_":
-                window.find_element("_stop_radio_").Update(visible=True)
-    elif event == "_stop_radio_":
-        Radio.radio_stop()
-        window.find_element("_stop_radio_").Update(visible=False)
-        window.find_element("_now_playing_").Update("")
+        play_radio("_radios_list_")
+    elif (event == " - Remove from favourites" or event == "Delete:46") \
+            and len(values["_fav_radios_list_"]) == 1 \
+            and len(fav_radios.temporary_list) > 0:
+        del fav_radios.temporary_list[values["_fav_radios_list_"][0]]
+        with open(os.path.join(dirs[1], "favourites.dat"), "w") as file:
+            for each in fav_radios.temporary_list:
+                file.write("%s,%s,%s,%s,%s" % (each[0], each[1], each[2], each[3], each[4]))
+        gui_window['_fav_radios_list_'].update([[i[0], i[1], i[2]] for i in fav_radios.temporary_list])
 
-    if event == "_run_background_":
-        window.Close()
-    if event == "_filter_button_":
-        window.find_element("_radios_list_").Update(
-            [i[1], i[3], i[4]] for i in Radio.radio_list(values["_sort_by_"], values["_order_by_"])
+    elif event == " ➕  Add to favourites" and len(values['_radios_list_']) == 1:
+        selected = radios.temporary_list[values['_radios_list_'][0]]
+        with open(os.path.join(dirs[1], "favourites.dat"), "a+") as file:
+            file.write("%s,%s,%s,%s,%s\n" % (selected[0], selected[1], selected[2], selected[3], selected[4]))
+        fav_radios.temporary_list.append(selected)
+        gui_window['_fav_radios_list_'].update([[i[0], i[1], i[2]] for i in fav_radios.temporary_list])
+
+    elif event == "_stop_radio_":
+        play.refresh()
+        gui_window.find_element("_now_playing_").Update(text_color="#1D95A7")
+        gui_window.find_element("_stop_radio_").Update(disabled=True)
+        gui_window.find_element("_record_radio_").Update(disabled=True)
+        gui_window.find_element("_now_playing_").Update("")
+        Media.selected_radio = None
+    elif event == "_save_equalizer_":
+        save_equalizer(values)
+    elif event == "_record_radio_":
+        if Media.selected_radio is not None:
+            play.refresh()
+            play.current = Media(play.current.selected_radio[3], record=True)
+            play.current.radio_start()
+            gui_window.find_element("_now_playing_").Update(text_color="#E96767")
+            gui_window.find_element("_stop_radio_").Update(disabled=False)
+            gui_window.find_element("_record_radio_").Update(disabled=True)
+    elif len(values['_records_list_']) == 1:
+        selected_record = get_records()[values['_records_list_'][0]]
+        if event == "_records_list_":
+            if get_records()[values['_records_list_'][0]][0] != "":
+                play_radio("_records_list_")
+        elif event in ["Delete record", "Delete:46"]:
+            playing = False
+            if play.current is not None:
+                if len(play.current.selected_radio) == 6:
+                    if play.current.selected_radio[3] == selected_record[3]:
+                        sg.PopupError("Can not delete radio while playing", no_titlebar=True, keep_on_top=True)
+                        playing = True
+            if os.path.isfile(selected_record[3]) and not playing:
+                os.remove(selected_record[3])
+                gui_window['_records_list_'].update(
+                    [[get_records()[i][k] for k in range(len(get_records()[i]))] for i in range(len(get_records()))]
+                )
+    if event == "Open Location":
+        os.popen("explorer " + dirs[0])
+
+    if play.current is not None and (event == "_equalizer_preset_" or '_eq_band' in event):
+        play.current.set_equalizer([values['_eq_band_%s' % i] for i in range(10)])
+    if play.current is not None and event == "_load_equalizer_":
+        play.current.set_equalizer([values['_eq_band_%s' % i] for i in range(10)])
+    if event == "Refresh":
+        gui_window['_records_list_'].update(
+            [[get_records()[i][k] for k in range(len(get_records()[i]))] for i in range(len(get_records()))]
         )

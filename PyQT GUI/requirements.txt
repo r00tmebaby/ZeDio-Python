@@ -1,0 +1,4 @@
+pysimplegui~=4.43.0
+python-vlc
+requests~=2.25.1
+pafy~=0.5.5
