@@ -1,5 +1,15 @@
 <h2>Simple radio program that can play and record your favourite radio statoins as well as youtube live streams </h2>
 
+<p>
+<b>Using PySimpleGui</b><hr>
+<table>
+  <tr>
+    <td><img src="https://i.gyazo.com/a50d63d8533242d7bc90cf14b3bdd771.png"></td>
+    <td><img src="https://i.gyazo.com/854ef919857a89d9f18164e055c78787.png"></td>
+  </tr>
+</table>
+</p>
+
 <table border="0">
   <tr>
     <td><p>
@@ -12,15 +22,3 @@
 </p></td>
 </tr>
 </table>
-
-
-<p>
-<b>Using PySimpleGui</b><hr>
-<table>
-  <tr>
-    <td><img src="https://i.gyazo.com/a50d63d8533242d7bc90cf14b3bdd771.png"></td>
-    <td><img src="https://i.gyazo.com/854ef919857a89d9f18164e055c78787.png"></td>
-  </tr>
-</table>
-</p>
-
