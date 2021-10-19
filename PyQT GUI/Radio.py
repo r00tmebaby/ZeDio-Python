@@ -69,23 +69,13 @@ saved_equalizer = 10,10,10,10,10,10,10,10,10,10
         with open(settings_file, "a+") as set_file:
             set_file.write(default_settings)
 
-    for i in range(len(vlc_dlls)):
-        if PLATFORM.startswith(vlc_dlls[i][0]):
-            try:
-                shutil.copytree("vlc/plugins", vlc_dlls[i][1])
-            except FileExistsError:
-                pass
-            for each_dll in vlc_dlls[i][2]:
-                if not os.path.isfile(os.path.join(vlc_dlls[i][1], each_dll)):
-                    shutil.copy(os.path.join("vlc", each_dll), vlc_dlls[i][1])
-
 
 create_directories()
 config = configparser.ConfigParser(inline_comment_prefixes="#")
 config.read(os.path.join(dirs[1], "settings.ini"))
 sg.theme(config.get("Settings", "theme"))
 
-import vlc
+import player
 
 
 def name(array: list) -> str:
@@ -352,7 +342,7 @@ def play_radio(values_str: str) -> None:
 
 
 class Media:
-    __instance = vlc.Instance("--verbose=0 --audio-visual=visual --no-xlib")
+    __instance = player.Instance("--verbose=0 --audio-visual=visual --no-xlib")
     if __instance is not None:
         __player = __instance.media_player_new()
     __media = None
@@ -360,7 +350,7 @@ class Media:
     __record = False
     __flat_file = False
 
-    band_count = vlc.libvlc_audio_equalizer_get_band_count()
+    band_count = player.libvlc_audio_equalizer_get_band_count()
     selected_radio = None
     v_player = None
     song = "..."
@@ -397,7 +387,7 @@ class Media:
             if "youtube" in self.selected_radio[3].lower():
                 audio = pafy.new(self.__url)
                 best = audio.getbest()
-                self.v_player = vlc.MediaPlayer(best.url, "--verbose=0  --no-xlib")
+                self.v_player = player.MediaPlayer(best.url, "--verbose=0  --no-xlib")
 
                 if PLATFORM.startswith('linux'):
                     self.v_player.set_xwindow(gui_window['_radio_logo_'].Widget.winfo_id())
@@ -435,15 +425,15 @@ class Media:
             equalizer_amp = [0 for i in range(10)]
 
         equalizer_freq = []
-        equalizer_band = vlc.libvlc_audio_equalizer_get_band_count()
-        equalizer = vlc.AudioEqualizer()
+        equalizer_band = player.libvlc_audio_equalizer_get_band_count()
+        equalizer = player.AudioEqualizer()
         for band_id in range(equalizer_band):
             try:
                 amp = equalizer_amp[band_id]
             except IndexError:
                 amp = 0
             equalizer.set_amp_at_index(amp, band_id)
-            equalizer_freq.append(vlc.libvlc_audio_equalizer_get_band_frequency(band_id))
+            equalizer_freq.append(player.libvlc_audio_equalizer_get_band_frequency(band_id))
 
         if self.v_player is not None:
             self.v_player.set_equalizer(equalizer)
