@@ -1,15 +1,13 @@
 import os.path
-import shutil
 import time
 from datetime import datetime
 import configparser
 import PySimpleGUI
 import PySimpleGUI as sg
-
 import pafy
 import requests
 import images
-from sys import platform as PLATFORM
+import player
 
 pafy.backend = "youtube-dl"
 
@@ -30,6 +28,7 @@ preset_equalizers = [
     ["Bass Booster", [20, 17, 11, 8, 0, 5, 9, 10, 13, 13]],
     ["Zedio", [20, 10, 5, 7, 9, 13, 16, 13, 16, 20]]
 ]
+
 
 def get_list(string: str):
     check = string.split(",")
@@ -75,7 +74,7 @@ config = configparser.ConfigParser(inline_comment_prefixes="#")
 config.read(os.path.join(dirs[1], "settings.ini"))
 sg.theme(config.get("Settings", "theme"))
 
-import player
+
 
 
 def name(array: list) -> str:
@@ -280,7 +279,7 @@ tabs = [[sg.TabGroup(layout=[[
 ]])]]
 
 gui_window = sg.Window(
-    "ZEDiO     🎧 v0.4 @r00tme   🕑 13/06/2021     ",
+    "ZEDiO     🎧 v0.5 @r00tme   🕑 20/10/2021     ",
     text_justification="center",
     auto_size_text=True,
     return_keyboard_events=True,
@@ -369,7 +368,6 @@ class Media:
             )
         else:
             self.__media = self.__instance.media_new(url.strip())
-
         self.__flat_file = flat_file
         self.__url = url
         self.__record = record
@@ -385,30 +383,26 @@ class Media:
         self.radio_stop()
         if not self.__flat_file:
             if "youtube" in self.selected_radio[3].lower():
-                audio = pafy.new(self.__url)
+                try:
+                    audio = pafy.new(self.__url)
+                except:
+                    sg.PopupError("ERROR: This live stream recording is not available.", no_titlebar=True,
+                                  keep_on_top=True, auto_close=True)
+                    return
                 best = audio.getbest()
                 self.v_player = player.MediaPlayer(best.url, "--verbose=0  --no-xlib")
-
-                if PLATFORM.startswith('linux'):
-                    self.v_player.set_xwindow(gui_window['_radio_logo_'].Widget.winfo_id())
-                else:
-                    self.v_player.set_hwnd(gui_window['_radio_logo_'].Widget.winfo_id())
+                self.v_player.set_hwnd(gui_window['_radio_logo_'].Widget.winfo_id())
                 self.v_player.play()
                 self.song = audio.author
-
             else:
-                if PLATFORM.startswith('linux'):
-                    self.__player.set_xwindow(gui_window['_radio_spectrum_'].Widget.winfo_id())
-                else:
-                    self.__player.set_hwnd(gui_window['_radio_spectrum_'].Widget.winfo_id())
+                self.__player.set_hwnd(gui_window['_radio_spectrum_'].Widget.winfo_id())
                 self.__player.set_media(self.__media)
                 self.__player.play()
                 self.__media.get_mrl()
                 self.__media.parse()
                 time.sleep(0.2)
                 self.song = self.selected_radio[0] if self.__media.get_meta(12) is None else self.__media.get_meta(12)
-        else:
-            print(self.selected_radio)
+
 
     def set_equalizer(self, equalizer_amp=None) -> None:
         """
