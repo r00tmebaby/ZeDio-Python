@@ -1,5 +1,7 @@
 <h2>A simple radio program that can play and record your favourite radio stations as well as youtube live streams </h2>
 
+It usses libvlc.dll (VLC) API to play the audio streams and youtube-dl for videos.
+
 
 
 Video: https://vimeo.com/571840927
