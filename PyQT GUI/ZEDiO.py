@@ -8,6 +8,7 @@ import pafy
 import requests
 import images
 import player
+from sys import platform as PLATFORM
 
 pafy.backend = "youtube-dl"
 
@@ -391,11 +392,18 @@ class Media:
                     return
                 best = audio.getbest()
                 self.v_player = player.MediaPlayer(best.url, "--verbose=0  --no-xlib")
-                self.v_player.set_hwnd(gui_window['_radio_logo_'].Widget.winfo_id())
+                if PLATFORM.startswith('linux'):
+                    self.v_player.set_xwindow(gui_window['_radio_logo_'].Widget.winfo_id())
+                else:
+                    self.v_player.set_hwnd(gui_window['_radio_logo_'].Widget.winfo_id())
                 self.v_player.play()
                 self.song = audio.author
             else:
-                self.__player.set_hwnd(gui_window['_radio_spectrum_'].Widget.winfo_id())
+                if PLATFORM.startswith('linux'):
+                    self.__player.set_xwindow(gui_window['_radio_spectrum_'].Widget.winfo_id())
+                else:
+                    self.__player.set_hwnd(gui_window['_radio_spectrum_'].Widget.winfo_id())
+
                 self.__player.set_media(self.__media)
                 self.__player.play()
                 self.__media.get_mrl()
