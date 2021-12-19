@@ -12,12 +12,32 @@ from sys import platform as PLATFORM
 
 pafy.backend = "youtube-dl"
 
+# REF: https://wiki.videolan.org/VLC_command-line_help
+vlc_config = \
+    """
+            --verbose=0 
+            
+            --audio-visual=visual
+            --effect-kaiser-param=-20.45667456745454670
+            --effect-fft-window=kaiser
+            --effect-width=70
+            --effect-height=50
+            --spect-color=127
+            --no-spect-show-bands
+            --no-visual-peaks
+            --no-xlib
+            --spect-radius=20
+    """
+
 dirs = ["Download", "Settings"]
+
 band_params = ["30Hz", "60Hz", "125Hz", "250Hz", "500Hz", "1Khz", "2Khz", "4Khz", "8Khz", "16Khz"]
+
 vlc_dlls = [
     ["win", os.environ['WINDIR'] + "\\System32\\", ["libvlc.dll", "libvlccore.dll", "axvlc.dll"]],
     # ["darwin", os.environ['DARWIN'] + "\\System32\\", ["lib\\libvlc.dylib", "lib\libvlccore.dll"]],
 ]
+
 preset_equalizers = [
     ["Flat", [10, 10, 10, 10, 10, 10, 10, 10, 10, 10]],
     ["Acoustic", [14, 14, 12, 10, 11, 11, 12, 12, 12, 11]],
@@ -27,7 +47,7 @@ preset_equalizers = [
     ["Pop", [8, 8, 10, 11, 13, 13, 12, 10, 9, 9]],
     ["Rock", [15, 14, 13, 12, 10, 10, 11, 12, 13, 14]],
     ["Bass Booster", [20, 17, 11, 8, 0, 5, 9, 10, 13, 13]],
-    ["Zedio", [20, 10, 5, 7, 9, 13, 16, 13, 16, 20]]
+    ["Zedio", [20, 10, 8, 8, 9, 10, 13, 13, 15, 20]]
 ]
 
 
@@ -61,7 +81,7 @@ def create_directories():
             os.mkdir(each_dir)
     settings_file = os.path.join(dirs[1], "settings.ini")
     default_settings = """[Settings]
-radio_list = https://radio.zdpainters.com/radio.txt
+radio_list = https://r00tme.cp.uk/api/radio-python.txt
 theme= DarkGrey13
 saved_equalizer = 10,10,10,10,10,10,10,10,10,10
     """
@@ -74,8 +94,6 @@ create_directories()
 config = configparser.ConfigParser(inline_comment_prefixes="#")
 config.read(os.path.join(dirs[1], "settings.ini"))
 sg.theme(config.get("Settings", "theme"))
-
-
 
 
 def name(array: list) -> str:
@@ -134,7 +152,7 @@ class Radios:
                     temp_radio_list.append(cols)
 
         self.all_list = temp_radio_list
-        self.temporary_list = self.all_list.sort(key=genre)
+        self.temporary_list = self.all_list.sort(key=name)
 
     def filter(self, st_filter: str = "") -> None:
         """
@@ -156,6 +174,34 @@ fav_radios.filter()
 radios.filter()
 
 fav_layout = [[sg.Col(layout=[
+    [sg.Col(layout=[
+        [sg.Frame("Add Radio Station", [
+            [
+                sg.Col(
+                    [
+                        [
+                            sg.T("Name"), sg.I(key="_add_radio_name_", size=(35, 1)),
+                            sg.T("Genre"), sg.I(key="_add_radio_genre_", size=(15, 1)),
+                            sg.T("Country"), sg.I(key="_add_radio_country_", size=(15, 1))
+                        ],
+                    ], justification="r", element_justification="r", expand_x=True,
+                ),
+            ],
+            [
+                sg.Col(
+                    [
+                        [sg.T("URL"), sg.I(key="_add_radio_link_", expand_x=True)]
+                    ], expand_x=True
+                )
+            ],
+            [
+                sg.Col(
+                    [
+                        [sg.B("Add Radio", key="_add_new_radio_")]
+                    ], justification="r",
+                )
+            ]
+        ], expand_x=True)]], expand_x=True)],
     [sg.Table(
         font="Arial, 14",
         values=[[i[0], i[1], i[2]] for i in fav_radios.temporary_list]
@@ -164,12 +210,13 @@ fav_layout = [[sg.Col(layout=[
         justification="left",
         key="_fav_radios_list_",
         row_height=30,
-        right_click_menu=["&koko", [' - Remove from favourites']],
+        right_click_menu=["&", ['Remove from favourites']],
         bind_return_key=True,
         num_rows=20,
-        headings=["Name                ", "Genre        ", "Country     "])
+        expand_x=True,
+        headings=["Name            ", "Genre      ", "Country   "])
     ]
-], justification="center", size=(700, 700))]]
+], justification="center", expand_x=True)]]
 
 records_layout = [[sg.Col(layout=[
     [sg.Table(
@@ -178,12 +225,13 @@ records_layout = [[sg.Col(layout=[
         justification="left",
         key="_records_list_",
         row_height=30,
-        right_click_menu=["&koko", ['Refresh', 'Open Location', 'Delete record']],
+        right_click_menu=["&", ['Refresh', 'Open Location', 'Delete record']],
         bind_return_key=True,
         num_rows=20,
-        headings=["Radio              ", "Time        ", "Date          "])
+        expand_x=True,
+        headings=["Radio          ", "Time      ", "Date        "])
     ]
-], justification="center", size=(700, 700))]]
+], justification="center", expand_x=True)]]
 
 equalizer_layout = [sg.Col(layout=[
     [sg.Frame("Equalizer", layout=[
@@ -220,19 +268,31 @@ equalizer_layout = [sg.Col(layout=[
 
 play_layout = [[sg.Col([
     [sg.Col(
-        [[sg.Image(data=images.zedio, key="_radio_logo_", size=(150, 150))]],
+        [[sg.Image(data=images.zedio, key="_radio_logo_", expand_y=True, expand_x=True)]],
         size=(165, 165), background_color="#282A2F"),
         sg.Col([
-            [sg.Col([[sg.Frame("Currently Playing", [
+            [sg.Col(
                 [
-                    sg.Canvas(key="_radio_spectrum_", size=(20, 15)),
-                    sg.T(" - ", key="_now_playing_", size=(27, 1), justification="left", font="Arial, 14",
-                         text_color="#1D95A7"),
-                    sg.B(image_data=images.record, key="_record_radio_", button_color=("#E5E5E5", "#81352A"),
-                         disabled=True, size=(5, 1)),
-                    sg.B(image_data=images.stop, key="_stop_radio_", button_color=("#E5E5E5", "#000"), disabled=True,
-                         size=(5, 1))
-                ]], element_justification="left")]], justification="left", element_justification="left")],
+                    [
+                        sg.Frame("Currently Playing", [
+                            [
+                                sg.Canvas(key="_radio_spectrum_", size=(60, 40)),
+                                sg.T(" - ", key="_now_playing_", size=(24, 1), justification="left", font="Arial, 14",
+                                     text_color="#1D95A7"),
+                                sg.B(image_data=images.record, image_size=(40, 40), key="_record_radio_",
+                                     button_color=("#E5E5E5", "#81352A"),
+                                     disabled=True),
+                                sg.B(image_data=images.stop, image_size=(40, 40), key="_stop_radio_",
+                                     button_color=("#E5E5E5", "#000"),
+                                     disabled=True)
+                            ]
+                        ], element_justification="right", expand_x=True)
+                    ]
+                ],
+                justification="left",
+                element_justification="left",
+                expand_x=True
+            )],
             [sg.Col([
                 [sg.Frame("Filter", layout=[[
                     sg.I(key="_search_name_", size=(20, 1)),
@@ -240,23 +300,22 @@ play_layout = [[sg.Col([
                     sg.DropDown(
                         ["Name", "Genre", "Country"],
                         key="_sort_by_",
-                        size=(7, 1),
-                        default_value="Genre",
+                        default_value="Name",
                         change_submits=True,
-                        readonly=True
+                        readonly=True,
                     ),
                     sg.T("Order by"),
                     sg.DropDown(
                         ["Desc", "Asc"],
                         key="_order_by_",
                         change_submits=True,
-                        size=(6, 1),
                         default_value="Desc",
-                        readonly=True
-                    )]
-                ])]])
+                        readonly=True,
+                        pad=(10, 10),
+                    )],
+                ], expand_x=True)]], expand_x=True, expand_y=True,)
             ],
-        ], element_justification="left", justification="left")],
+        ], element_justification="left", justification="left", expand_y=True, expand_x=True)],
 
     [sg.Col(layout=[
         [sg.Table(
@@ -280,15 +339,15 @@ tabs = [[sg.TabGroup(layout=[[
 ]])]]
 
 gui_window = sg.Window(
-    "ZEDiO     🎧 v0.5 @r00tme   🕑 20/10/2021     ",
+    "ZEDiO     🎧 v0.9 @r00tme   🕑 19/12/2021     ",
     text_justification="center",
     auto_size_text=True,
     return_keyboard_events=True,
     keep_on_top=True,
     icon="ico.ico",
-    right_click_menu=["&koko", [' ➕  Add to favourites']],
+    right_click_menu=["&", ['Add to favourites', 'Refresh Radios']],
     alpha_channel=0.9,
-    size=(670, 700),
+    size=(700, 700),
     use_default_focus=True,
 
 ).Layout(tabs).finalize()
@@ -308,6 +367,17 @@ def save_equalizer(values: sg.ObjToString) -> None:
     config.set(dirs[1], "saved_equalizer", new_eq)
     with open(os.path.join(dirs[1], "settings.ini"), 'w') as configfile:
         config.write(configfile)
+
+
+def add_favourite(radio_data: list):
+    """
+    Adding a new radio to favourites
+    :param radio_data: List that contains radio data [Name, Genre, Country, URL]
+    """
+    with open(os.path.join(dirs[1], "favourites.dat"), "a+") as file:
+        file.write("%s,%s,%s,%s,%s\n" % (radio_data[0], radio_data[1], radio_data[2], radio_data[3], radio_data[4]))
+    fav_radios.temporary_list.append(radio_data)
+    gui_window['_fav_radios_list_'].update([[i[0], i[1], i[2]] for i in fav_radios.temporary_list])
 
 
 def play_radio(values_str: str) -> None:
@@ -342,7 +412,7 @@ def play_radio(values_str: str) -> None:
 
 
 class Media:
-    __instance = player.Instance("--verbose=0 --audio-visual=visual --no-xlib")
+    __instance = player.Instance(vlc_config)
     if __instance is not None:
         __player = __instance.media_player_new()
     __media = None
@@ -387,8 +457,12 @@ class Media:
                 try:
                     audio = pafy.new(self.__url)
                 except:
-                    sg.PopupError("ERROR: This live stream recording is not available.", no_titlebar=True,
-                                  keep_on_top=True, auto_close=True)
+                    sg.PopupError(
+                        "ERROR: This live stream recording is not available.",
+                        no_titlebar=True,
+                        keep_on_top=True,
+                        auto_close=True
+                    )
                     return
                 best = audio.getbest()
                 self.v_player = player.MediaPlayer(best.url, "--verbose=0  --no-xlib")
@@ -403,14 +477,12 @@ class Media:
                     self.__player.set_xwindow(gui_window['_radio_spectrum_'].Widget.winfo_id())
                 else:
                     self.__player.set_hwnd(gui_window['_radio_spectrum_'].Widget.winfo_id())
-
                 self.__player.set_media(self.__media)
                 self.__player.play()
                 self.__media.get_mrl()
                 self.__media.parse()
                 time.sleep(0.2)
                 self.song = self.selected_radio[0] if self.__media.get_meta(12) is None else self.__media.get_meta(12)
-
 
     def set_equalizer(self, equalizer_amp=None) -> None:
         """
@@ -462,12 +534,6 @@ class Play:
 
 play = Play()
 
-if config.getint("Settings", "first_run") == 1:
-    os.startfile("install.cmd")
-    config.set("Settings", "first_run", "0")
-    with open(os.path.join(dirs[1], "settings.ini"), 'w') as configfile:
-        config.write(configfile)
-
 while True:
     event, values = gui_window.Read()
 
@@ -478,6 +544,7 @@ while True:
         gui_window.find_element("_radios_list_").Update(radios.filter(values['_search_name_']))
     except PySimpleGUI.ErrorElement:
         continue
+
     if play.current is not None and (event == "_equalizer_preset_" or '_eq_band' in event):
         play.current.set_equalizer([values['_eq_band_%s' % i] for i in range(10)])
     if event == "_equalizer_preset_":
@@ -500,7 +567,7 @@ while True:
         play_radio("_fav_radios_list_")
     elif event == "_radios_list_" and len(values["_radios_list_"]) == 1:
         play_radio("_radios_list_")
-    elif (event == " - Remove from favourites" or event == "Delete:46") \
+    elif (event == "Remove from favourites" or event == "Delete:46") \
             and len(values["_fav_radios_list_"]) == 1 \
             and len(fav_radios.temporary_list) > 0:
         del fav_radios.temporary_list[values["_fav_radios_list_"][0]]
@@ -509,13 +576,21 @@ while True:
                 file.write("%s,%s,%s,%s,%s" % (each[0], each[1], each[2], each[3], each[4]))
         gui_window['_fav_radios_list_'].update([[i[0], i[1], i[2]] for i in fav_radios.temporary_list])
 
-    elif event == " ➕  Add to favourites" and len(values['_radios_list_']) == 1:
-        selected = radios.temporary_list[values['_radios_list_'][0]]
-        with open(os.path.join(dirs[1], "favourites.dat"), "a+") as file:
-            file.write("%s,%s,%s,%s,%s\n" % (selected[0], selected[1], selected[2], selected[3], selected[4]))
-        fav_radios.temporary_list.append(selected)
-        gui_window['_fav_radios_list_'].update([[i[0], i[1], i[2]] for i in fav_radios.temporary_list])
-
+    elif event == "Add to favourites" and len(values['_radios_list_']) == 1:
+        add_favourite(radios.temporary_list[values['_radios_list_'][0]])
+    elif event == "_add_new_radio_":
+        if len(values['_add_radio_name_']) > 1 and \
+                len(values['_add_radio_link_']) > 10 and \
+                len(values['_add_radio_genre_']) > 1 and \
+                len(values['_add_radio_country_']) > 1:
+            add_favourite(
+                [
+                    values['_add_radio_name_'],
+                    values['_add_radio_genre_'],
+                    values['_add_radio_country_'],
+                    values['_add_radio_link_'],
+                    images.zedio
+                ])
     elif event == "_stop_radio_":
         play.refresh()
         gui_window.find_element("_now_playing_").Update(text_color="#1D95A7")
@@ -539,17 +614,19 @@ while True:
             if get_records()[values['_records_list_'][0]][0] != "":
                 play_radio("_records_list_")
         elif event in ["Delete record", "Delete:46"]:
-            playing = False
-            if play.current is not None:
-                if len(play.current.selected_radio) == 6:
+            try:
+                playing = False
+                if play.current is not None:
                     if play.current.selected_radio[3] == selected_record[3]:
                         sg.PopupError("Can not delete radio while playing", no_titlebar=True, keep_on_top=True)
-                        playing = True
-            if os.path.isfile(selected_record[3]) and not playing:
-                os.remove(selected_record[3])
-                gui_window['_records_list_'].update(
-                    [[get_records()[i][k] for k in range(len(get_records()[i]))] for i in range(len(get_records()))]
-                )
+                if os.path.isfile(selected_record[3]) and not playing:
+                    os.remove(selected_record[3])
+                    gui_window['_records_list_'].update(
+                        [[get_records()[i][k] for k in range(len(get_records()[i]))] for i in range(len(get_records()))]
+                    )
+            except:
+                sg.PopupError("Can not be deleted at the moment", no_titlebar=True, keep_on_top=True)
+
     if event == "Open Location":
         os.popen("explorer " + dirs[0])
 
