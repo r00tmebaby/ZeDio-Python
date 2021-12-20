@@ -1,4 +1,5 @@
 import os.path
+# from moviepy.editor import *
 import time
 from datetime import datetime
 import configparser
@@ -94,6 +95,13 @@ create_directories()
 config = configparser.ConfigParser(inline_comment_prefixes="#")
 config.read(os.path.join(dirs[1], "settings.ini"))
 sg.theme(config.get("Settings", "theme"))
+
+
+# def convert_audio(video_file, audio_file):
+#   video_clip = VideoFileClip(video_file)
+#   audio_clip = video_clip.audio.write_audiofile(audio_file)
+#   video_clip.close()
+#   audio_clip.close()
 
 
 def name(array: list) -> str:
@@ -313,7 +321,7 @@ play_layout = [[sg.Col([
                         readonly=True,
                         pad=(10, 10),
                     )],
-                ], expand_x=True)]], expand_x=True, expand_y=True,)
+                ], expand_x=True)]], expand_x=True, expand_y=True, )
             ],
         ], element_justification="left", justification="left", expand_y=True, expand_x=True)],
 
@@ -423,6 +431,7 @@ class Media:
     band_count = player.libvlc_audio_equalizer_get_band_count()
     selected_radio = None
     v_player = None
+
     song = "..."
 
     def __init__(self, url: str, record=False, flat_file=False):
@@ -433,10 +442,25 @@ class Media:
         if record:
             if not os.path.isdir(dirs[0]):
                 os.mkdir(dirs[0])
-            self.__media = self.__instance.media_new(
-                url.strip(), "sout=#duplicate{dst=file{dst=" + dirs[0] + "/%s-%s.mp3},dst=display}"
-                             % (self.selected_radio[0], datetime.now().strftime("%d %b %Y-%H-%M-%S"))
-            )
+            if "youtu" in url:
+                try:
+                    audio = pafy.new(url)
+                    best = audio.getbest()
+                    file_name = dirs[0] + "/%s-%s" % (audio.author, datetime.now().strftime("%d %b %Y-%H-%M-%S"))
+                    best.download("%s.%s" % (file_name, best.extension))
+
+                except:
+                    sg.PopupError(
+                        "ERROR: Can not record the stream",
+                        no_titlebar=True,
+                        keep_on_top=True,
+                        auto_close=True
+                    )
+            else:
+                self.__media = self.__instance.media_new(
+                    url.strip(), "sout=#duplicate{dst=file{dst=" + dirs[0] + "/%s-%s.mp3},dst=display}"
+                                 % (self.selected_radio[0], datetime.now().strftime("%d %b %Y-%H-%M-%S"))
+                )
         else:
             self.__media = self.__instance.media_new(url.strip())
         self.__flat_file = flat_file
@@ -453,7 +477,7 @@ class Media:
         """
         self.radio_stop()
         if not self.__flat_file:
-            if "youtube" in self.selected_radio[3].lower():
+            if "youtu.be" in self.selected_radio[3].lower():
                 try:
                     audio = pafy.new(self.__url)
                 except:
@@ -598,6 +622,12 @@ while True:
         gui_window.find_element("_record_radio_").Update(disabled=True)
         gui_window.find_element("_now_playing_").Update("")
         Media.selected_radio = None
+
+        # Fixme --
+        # for files in os.listdir("Download"):
+        #    if files.endswith(".mp4"):
+        #        convert_audio(os.path.join("Download", files), os.path.join("Download", files.replace(".mp4", "mp3")))
+
     elif event == "_save_equalizer_":
         save_equalizer(values)
     elif event == "_record_radio_":
