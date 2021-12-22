@@ -1,5 +1,4 @@
 import os.path
-# from moviepy.editor import *
 import time
 from datetime import datetime
 import configparser
@@ -17,7 +16,6 @@ pafy.backend = "youtube-dl"
 vlc_config = \
     """
             --verbose=0 
-            
             --audio-visual=visual
             --effect-kaiser-param=-20.45667456745454670
             --effect-fft-window=kaiser
@@ -26,6 +24,7 @@ vlc_config = \
             --spect-color=127
             --no-spect-show-bands
             --no-visual-peaks
+            --no-video
             --no-xlib
             --spect-radius=20
     """
@@ -347,7 +346,7 @@ tabs = [[sg.TabGroup(layout=[[
 ]])]]
 
 gui_window = sg.Window(
-    "ZEDiO     🎧 v0.9 @r00tme   🕑 19/12/2021     ",
+    "ZEDiO     🎧 v1.0 @r00tme   🕑 21/12/2021     ",
     text_justification="center",
     auto_size_text=True,
     return_keyboard_events=True,
@@ -477,7 +476,7 @@ class Media:
         """
         self.radio_stop()
         if not self.__flat_file:
-            if "youtu.be" in self.selected_radio[3].lower():
+            if "youtu" in self.selected_radio[3].lower():
                 try:
                     audio = pafy.new(self.__url)
                 except:
@@ -489,7 +488,8 @@ class Media:
                     )
                     return
                 best = audio.getbest()
-                self.v_player = player.MediaPlayer(best.url, "--verbose=0  --no-xlib")
+                self.v_player = player.MediaPlayer(best.url, "streamlink", vlc_config)
+
                 if PLATFORM.startswith('linux'):
                     self.v_player.set_xwindow(gui_window['_radio_logo_'].Widget.winfo_id())
                 else:
