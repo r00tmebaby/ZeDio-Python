@@ -387,7 +387,7 @@ def add_favourite(radio_data: list):
     gui_window['_fav_radios_list_'].update([[i[0], i[1], i[2]] for i in fav_radios.temporary_list])
 
 
-def play_radio(values_str: str) -> None:
+def play_radio(values_str: str, record = False) -> None:
     """
     Plays the selected radio and updates the main gui buttons
     :param values_str: GUI event object
@@ -411,7 +411,9 @@ def play_radio(values_str: str) -> None:
     play.current = Media(Media.selected_radio[3])
     play.current.radio_start()
 
-    gui_window['_radio_logo_'].update(data=play.current.selected_radio[image_index])
+    if not record:
+        gui_window['_radio_logo_'].update(data=play.current.selected_radio[image_index])
+
     gui_window['_now_playing_'].update("%s" % play.current.song)
     gui_window.find_element("_now_playing_").Update(text_color="#1D95A7")
     gui_window.find_element("_stop_radio_").Update(disabled=False)
@@ -475,6 +477,7 @@ class Media:
         Checks the link and switch the players if it is a video
         """
         self.radio_stop()
+
         if not self.__flat_file:
             if "youtu" in self.selected_radio[3].lower():
                 try:
@@ -495,6 +498,7 @@ class Media:
                 else:
                     self.v_player.set_hwnd(gui_window['_radio_logo_'].Widget.winfo_id())
                 self.v_player.play()
+
                 self.song = audio.author
             else:
                 if PLATFORM.startswith('linux'):
@@ -635,6 +639,7 @@ while True:
             play.refresh()
             play.current = Media(play.current.selected_radio[3], record=True)
             play.current.radio_start()
+
             gui_window.find_element("_now_playing_").Update(text_color="#E96767")
             gui_window.find_element("_stop_radio_").Update(disabled=False)
             gui_window.find_element("_record_radio_").Update(disabled=True)
@@ -642,7 +647,7 @@ while True:
         selected_record = get_records()[values['_records_list_'][0]]
         if event == "_records_list_":
             if get_records()[values['_records_list_'][0]][0] != "":
-                play_radio("_records_list_")
+                play_radio("_records_list_", record=True)
         elif event in ["Delete record", "Delete:46"]:
             try:
                 playing = False
