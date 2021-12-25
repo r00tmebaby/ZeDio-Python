@@ -81,7 +81,7 @@ def create_directories():
             os.mkdir(each_dir)
     settings_file = os.path.join(dirs[1], "settings.ini")
     default_settings = """[Settings]
-radio_list = https://r00tme.cp.uk/api/radio-python.txt
+radio_list = https://r00tme.co.uk/api/radio-python.txt
 theme= DarkGrey13
 saved_equalizer = 10,10,10,10,10,10,10,10,10,10
     """
