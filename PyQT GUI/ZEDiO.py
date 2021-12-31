@@ -9,9 +9,10 @@ import requests
 import images
 import player
 from sys import platform as PLATFORM
+import asyncio
 
 pafy.backend = "youtube-dl"
-
+sg.theme('DarkBlack1')
 # REF: https://wiki.videolan.org/VLC_command-line_help
 vlc_config = \
     """
@@ -161,16 +162,17 @@ class Radios:
         self.all_list = temp_radio_list
         self.temporary_list = self.all_list.sort(key=name)
 
-    def filter(self, st_filter: str = "") -> None:
+    def filter(self, st_filter: str = "", st_sort_by: str = "") -> None:
         """
         Use the search field to sort the temporary list by names
 
         :param st_filter: Reads the search field from the GUI and sort the table based on the string
 
         """
+        sort  = 0 if st_sort_by == "Name" else 1 if  st_sort_by == "Genre" else 2
         if len(st_filter.strip()) > 0:
             self.temporary_list = [self.all_list[i] for i in range(len(self.all_list)) if
-                                   st_filter.lower() in self.all_list[i][0].lower()]
+                                   st_filter.lower() in self.all_list[i][sort].lower()]
         else:
             self.temporary_list = [self.all_list[i] for i in range(len(self.all_list))]
 
@@ -191,13 +193,13 @@ fav_layout = [[sg.Col(layout=[
                             sg.T("Genre"), sg.I(key="_add_radio_genre_", size=(15, 1)),
                             sg.T("Country"), sg.I(key="_add_radio_country_", size=(15, 1))
                         ],
-                    ], justification="r", element_justification="r", expand_x=True,
+                    ], justification="r", element_justification="l", expand_x=True,
                 ),
             ],
             [
                 sg.Col(
                     [
-                        [sg.T("URL"), sg.I(key="_add_radio_link_", expand_x=True)]
+                        [sg.T("URL  "), sg.I(key="_add_radio_link_", expand_x=True)]
                     ], expand_x=True
                 )
             ],
@@ -210,7 +212,7 @@ fav_layout = [[sg.Col(layout=[
             ]
         ], expand_x=True)]], expand_x=True)],
     [sg.Table(
-        font="Arial, 14",
+        font="Arial, 12",
         values=[[i[0], i[1], i[2]] for i in fav_radios.temporary_list]
         if len(fav_radios.temporary_list) > 0
         else [["", "", ""]],
@@ -221,13 +223,14 @@ fav_layout = [[sg.Col(layout=[
         bind_return_key=True,
         num_rows=20,
         expand_x=True,
+        expand_y=True,
         headings=["Name            ", "Genre      ", "Country   "])
     ]
-], justification="center", expand_x=True)]]
+], justification="center", expand_x=True, expand_y=True,)]]
 
 records_layout = [[sg.Col(layout=[
     [sg.Table(
-        font="Arial, 14",
+        font="Arial, 12",
         values=[[get_records()[i][k] for k in range(len(get_records()[i]))] for i in range(len(get_records()))],
         justification="left",
         key="_records_list_",
@@ -235,10 +238,11 @@ records_layout = [[sg.Col(layout=[
         right_click_menu=["&", ['Refresh', 'Open Location', 'Delete record']],
         bind_return_key=True,
         num_rows=20,
+        expand_y=True,
         expand_x=True,
         headings=["Radio          ", "Time      ", "Date        "])
     ]
-], justification="center", expand_x=True)]]
+], justification="center", expand_x=True, expand_y=True,)]]
 
 equalizer_layout = [sg.Col(layout=[
     [sg.Frame("Equalizer", layout=[
@@ -275,25 +279,33 @@ equalizer_layout = [sg.Col(layout=[
 
 play_layout = [[sg.Col([
     [sg.Col(
-        [[sg.Image(data=images.zedio, key="_radio_logo_", expand_y=True, expand_x=True)]],
-        size=(165, 165), background_color="#282A2F"),
+        [[sg.Image(data=images.zedio, key="_radio_logo_", expand_y=True, expand_x=True)]], background_color="#282A2F"),
         sg.Col([
             [sg.Col(
                 [
                     [
                         sg.Frame("Currently Playing", [
                             [
-                                sg.Canvas(key="_radio_spectrum_", size=(60, 40)),
-                                sg.T(" - ", key="_now_playing_", size=(24, 1), justification="left", font="Arial, 14",
-                                     text_color="#1D95A7"),
-                                sg.B(image_data=images.record, image_size=(40, 40), key="_record_radio_",
+                                sg.Col([[
+                                    sg.Canvas(key="_radio_spectrum_", size=(60, 40), background_color="Black"),
+                                    sg.Input(
+                                        "  ",
+                                        key="_now_playing_",
+                                        justification="left",
+                                        expand_x=True,
+                                        expand_y=True,
+                                        font="Courier, 12",
+                                        text_color="#1D95A7"
+                                    )
+                                ]], element_justification="left", expand_x=True),
+                                sg.Col([[                                sg.B(image_data=images.record, image_size=(40, 40), key="_record_radio_",
                                      button_color=("#E5E5E5", "#81352A"),
                                      disabled=True),
                                 sg.B(image_data=images.stop, image_size=(40, 40), key="_stop_radio_",
                                      button_color=("#E5E5E5", "#000"),
-                                     disabled=True)
+                                     disabled=True)]], element_justification="right")
                             ]
-                        ], element_justification="right", expand_x=True)
+                        ], expand_x=True)
                     ]
                 ],
                 justification="left",
@@ -320,41 +332,44 @@ play_layout = [[sg.Col([
                         readonly=True,
                         pad=(10, 10),
                     )],
-                ], expand_x=True)]], expand_x=True, expand_y=True, )
+                ], expand_x=True)]], expand_x=True)
             ],
         ], element_justification="left", justification="left", expand_y=True, expand_x=True)],
 
     [sg.Col(layout=[
         [sg.Table(
-            font="Arial, 14",
+            font="Arial, 12",
             values=[[i[0], i[1], i[2]] for i in radios.temporary_list],
             bind_return_key=True,
             justification="left",
             key="_radios_list_",
             row_height=30,
+            expand_x=True,
             num_rows=40,
             headings=["Name", "Genre", "Country"])
         ]
-    ])],
-], element_justification="center")]]
+    ], expand_x=True,)],
+], element_justification="center", expand_x=True)]]
 
 tabs = [[sg.TabGroup(layout=[[
     sg.Tab(title="Player", layout=play_layout),
     sg.Tab(title="Favourites", layout=fav_layout),
     sg.Tab(title="Records", layout=records_layout),
     sg.Tab(title="Settings", layout=[equalizer_layout])
-]])]]
+]], expand_x=True)]]
 
 gui_window = sg.Window(
-    "ZEDiO     🎧 v1.0 @r00tme   🕑 21/12/2021     ",
+    "ZEDiO     🎧 v1.1 @r00tme   🕑 31/12/2021     ",
     text_justification="center",
     auto_size_text=True,
     return_keyboard_events=True,
     keep_on_top=True,
+    background_color="#444",
     icon="ico.ico",
     right_click_menu=["&", ['Add to favourites', 'Refresh Radios']],
     alpha_channel=0.9,
-    size=(700, 700),
+    size=(870,600),
+    resizable= True,
     use_default_focus=True,
 
 ).Layout(tabs).finalize()
@@ -468,6 +483,10 @@ class Media:
         self.__url = url
         self.__record = record
 
+    async def update_song(self):
+        await asyncio.sleep(0.1)
+        self.song = self.selected_radio[0] if self.__media.get_meta(12) is None else self.__media.get_meta(12)
+
     def radio_start(self) -> None:
         """
         Start playing the chosen link
@@ -509,8 +528,8 @@ class Media:
                 self.__player.play()
                 self.__media.get_mrl()
                 self.__media.parse()
-                time.sleep(0.2)
-                self.song = self.selected_radio[0] if self.__media.get_meta(12) is None else self.__media.get_meta(12)
+
+
 
     def set_equalizer(self, equalizer_amp=None) -> None:
         """
@@ -553,23 +572,25 @@ class Play:
     """
     Keeps the currently playing instance
     """
+
     current = None
 
     def refresh(self) -> None:
         if self.current is not None:
             self.current.radio_stop()
 
-
 play = Play()
 
+
+
 while True:
-    event, values = gui_window.Read()
+    event, values = gui_window.Read(timeout=3000)
 
     if event == sg.WIN_CLOSED:
         gui_window.Close()
         break
     try:
-        gui_window.find_element("_radios_list_").Update(radios.filter(values['_search_name_']))
+        gui_window.find_element("_radios_list_").Update(radios.filter(values['_search_name_'], values['_sort_by_']))
     except PySimpleGUI.ErrorElement:
         continue
 
@@ -664,7 +685,9 @@ while True:
 
     if event == "Open Location":
         os.popen("explorer " + dirs[0])
-
+    if play.current is not None:
+        asyncio.run(play.current.update_song())
+        gui_window.find_element("_now_playing_").Update(play.current.song)
     if play.current is not None and (event == "_equalizer_preset_" or '_eq_band' in event):
         play.current.set_equalizer([values['_eq_band_%s' % i] for i in range(10)])
     if play.current is not None and event == "_load_equalizer_":
