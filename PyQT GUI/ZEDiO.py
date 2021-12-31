@@ -14,6 +14,7 @@ import asyncio
 pafy.backend = "youtube-dl"
 sg.theme('DarkBlack1')
 # REF: https://wiki.videolan.org/VLC_command-line_help
+# https://www.olivieraubert.net/vlc/python-ctypes/doc/
 vlc_config = \
     """
             --verbose=0 
@@ -23,11 +24,6 @@ vlc_config = \
             --effect-width=70
             --effect-height=50
             --spect-color=127
-            --no-spect-show-bands
-            --no-visual-peaks
-            --no-video
-            --no-xlib
-            --spect-radius=20
     """
 
 dirs = ["Download", "Settings"]
@@ -245,7 +241,26 @@ records_layout = [[sg.Col(layout=[
 ], justification="center", expand_x=True, expand_y=True,)]]
 
 equalizer_layout = [sg.Col(layout=[
-    [sg.Frame("Equalizer", layout=[
+    [
+        #sg.Checkbox("Test", key="_test_function_", change_submits=True),
+        sg.Frame("Master",[
+            [sg.Checkbox("Mute", key="_set_mute_", change_submits=True, pad=(1, 5), default=config.getboolean("Settings", "muted"))],
+            [sg.Frame("Volume",[
+                [sg.Slider(
+                    range=(0, 100),
+                    default_value=100,
+                    orientation="v",
+                    change_submits=True,
+                    text_color="#00A615",
+                    font="Helvetica, 11",
+                    pad=(2, 2),
+                    expand_y=True,
+                    key="_set_master_volume_"
+                )
+                ]
+            ], pad=(5, 10), background_color="#037080", font="Helvetica, 8", expand_y=True)]
+        ], pad=(10, 10),expand_y=True, background_color="#282A2F", element_justification ="c"),
+        sg.Frame("Equalizer", layout=[
         [sg.Col([[
             sg.T("Preset EQ"),
             sg.DropDown(
@@ -262,16 +277,18 @@ equalizer_layout = [sg.Col(layout=[
             sg.B("Load", key="_load_equalizer_"),
         ],
         [sg.Frame(band_params[i], layout=[
-            [sg.Slider(
-                range=(0, 20),
-                size=(10, 15),
-                default_value=float(get_list(config.get("Settings", "saved_equalizer"))[i]),
-                orientation="v",
-                change_submits=True,
-                text_color="#00A615",
-                font="Helvetica, 11",
-                pad=(2, 2),
-                key="_eq_band_%s" % i)]
+            [
+                sg.Slider(
+                    range=(0, 20),
+                    size=(10, 15),
+                    default_value=float(get_list(config.get("Settings", "saved_equalizer"))[i]),
+                    orientation="v",
+                    change_submits=True,
+                    text_color="#00A615",
+                    font="Helvetica, 11",
+                    pad=(2, 2),
+                    key="_eq_band_%s" % i)
+            ]
         ], pad=(5, 10), background_color="#037080", font="Helvetica, 8") for i in range(10)
          ]
     ], size=(100, 20), element_justification="center", background_color="#282A2F", pad=(10, 10))]
@@ -284,7 +301,7 @@ play_layout = [[sg.Col([
             [sg.Col(
                 [
                     [
-                        sg.Frame("Currently Playing", [
+                        sg.Frame(" ", [
                             [
                                 sg.Col([[
                                     sg.Canvas(key="_radio_spectrum_", size=(60, 40), background_color="Black"),
@@ -305,7 +322,7 @@ play_layout = [[sg.Col([
                                      button_color=("#E5E5E5", "#000"),
                                      disabled=True)]], element_justification="right")
                             ]
-                        ], expand_x=True)
+                        ], expand_x=True, key="_currently_playing_")
                     ]
                 ],
                 justification="left",
@@ -364,16 +381,17 @@ gui_window = sg.Window(
     auto_size_text=True,
     return_keyboard_events=True,
     keep_on_top=True,
-    background_color="#444",
     icon="ico.ico",
     right_click_menu=["&", ['Add to favourites', 'Refresh Radios']],
     alpha_channel=0.9,
-    size=(870,600),
-    resizable= True,
+    size=(870, 600),
+    titlebar_background_color="Red",
+    resizable=True,
+    titlebar_text_color="Red",
     use_default_focus=True,
-
-).Layout(tabs).finalize()
-
+    finalize=True,
+    layout=tabs
+)
 
 def save_equalizer(values: sg.ObjToString) -> None:
     """
@@ -387,9 +405,11 @@ def save_equalizer(values: sg.ObjToString) -> None:
             coma = ""
         new_eq += "%s%s" % (int(values["_eq_band_%s" % i]), coma)
     config.set(dirs[1], "saved_equalizer", new_eq)
+    save_config()
+
+def save_config():
     with open(os.path.join(dirs[1], "settings.ini"), 'w') as configfile:
         config.write(configfile)
-
 
 def add_favourite(radio_data: list):
     """
@@ -406,6 +426,7 @@ def play_radio(values_str: str, record = False) -> None:
     """
     Plays the selected radio and updates the main gui buttons
     :param values_str: GUI event object
+    :param record: notify if the call if for record
     """
 
     image_index = 4
@@ -429,10 +450,11 @@ def play_radio(values_str: str, record = False) -> None:
     if not record:
         gui_window['_radio_logo_'].update(data=play.current.selected_radio[image_index])
 
+    gui_window['_currently_playing_'].update("Listening to %s" % Media.selected_radio[0])
     gui_window['_now_playing_'].update("%s" % play.current.song)
-    gui_window.find_element("_now_playing_").Update(text_color="#1D95A7")
-    gui_window.find_element("_stop_radio_").Update(disabled=False)
-    gui_window.find_element("_record_radio_").Update(disabled=False)
+    gui_window["_now_playing_"].Update(text_color="#1D95A7")
+    gui_window["_stop_radio_"].Update(disabled=False)
+    gui_window["_record_radio_"].Update(disabled=False)
 
 
 class Media:
@@ -443,6 +465,7 @@ class Media:
     __url = None
     __record = False
     __flat_file = False
+    __equalizer = None
 
     band_count = player.libvlc_audio_equalizer_get_band_count()
     selected_radio = None
@@ -485,7 +508,7 @@ class Media:
 
     async def update_song(self):
         await asyncio.sleep(0.1)
-        self.song = self.selected_radio[0] if self.__media.get_meta(12) is None else self.__media.get_meta(12)
+        self.song = "Unknown song" if self.__media.get_meta(12) is None else self.__media.get_meta(12)
 
     def radio_start(self) -> None:
         """
@@ -529,7 +552,21 @@ class Media:
                 self.__media.get_mrl()
                 self.__media.parse()
 
+    def test_function(self):
+        #self.__media.add_option("--audio-filter=Gain --gain-value=%.2f" % -34)
+        #print(self.__instance.audio_filter_list_get())
+        self.__equalizer.release()
+        self.__equalizer.set_preamp()
+        print(self.__equalizer.get_preamp())
 
+    def set_master_volume(self, volume: int):
+        player.libvlc_audio_set_volume(self.__player, int(volume))
+
+    def set_mute(self, status: int):
+        player.libvlc_audio_set_mute(self.__player, status)
+
+    def get_equalizer(self):
+        return self.__equalizer
 
     def set_equalizer(self, equalizer_amp=None) -> None:
         """
@@ -555,7 +592,7 @@ class Media:
                 amp = 0
             equalizer.set_amp_at_index(amp, band_id)
             equalizer_freq.append(player.libvlc_audio_equalizer_get_band_frequency(band_id))
-
+        self.__equalizer = equalizer
         if self.v_player is not None:
             self.v_player.set_equalizer(equalizer)
         elif self.__player is not None:
@@ -590,12 +627,11 @@ while True:
         gui_window.Close()
         break
     try:
-        gui_window.find_element("_radios_list_").Update(radios.filter(values['_search_name_'], values['_sort_by_']))
+        gui_window["_radios_list_"].Update(radios.filter(values['_search_name_'], values['_sort_by_']))
     except PySimpleGUI.ErrorElement:
         continue
 
-    if play.current is not None and (event == "_equalizer_preset_" or '_eq_band' in event):
-        play.current.set_equalizer([values['_eq_band_%s' % i] for i in range(10)])
+
     if event == "_equalizer_preset_":
         get_equalizer = [preset_equalizers[i][1] for i in range(len(preset_equalizers)) if
                          preset_equalizers[i][0] == values['_equalizer_preset_']][0]
@@ -642,10 +678,10 @@ while True:
                 ])
     elif event == "_stop_radio_":
         play.refresh()
-        gui_window.find_element("_now_playing_").Update(text_color="#1D95A7")
-        gui_window.find_element("_stop_radio_").Update(disabled=True)
-        gui_window.find_element("_record_radio_").Update(disabled=True)
-        gui_window.find_element("_now_playing_").Update("")
+        gui_window["_now_playing_"].Update(text_color="#1D95A7")
+        gui_window["_stop_radio_"].Update(disabled=True)
+        gui_window["_record_radio_"].Update(disabled=True)
+        gui_window["_now_playing_"].Update("")
         Media.selected_radio = None
 
         # Fixme --
@@ -661,9 +697,9 @@ while True:
             play.current = Media(play.current.selected_radio[3], record=True)
             play.current.radio_start()
 
-            gui_window.find_element("_now_playing_").Update(text_color="#E96767")
-            gui_window.find_element("_stop_radio_").Update(disabled=False)
-            gui_window.find_element("_record_radio_").Update(disabled=True)
+            gui_window["_now_playing_"].Update(text_color="#E96767")
+            gui_window["_stop_radio_"].Update(disabled=False)
+            gui_window["_record_radio_"].Update(disabled=True)
     elif len(values['_records_list_']) == 1:
         selected_record = get_records()[values['_records_list_'][0]]
         if event == "_records_list_":
@@ -680,19 +716,32 @@ while True:
                     gui_window['_records_list_'].update(
                         [[get_records()[i][k] for k in range(len(get_records()[i]))] for i in range(len(get_records()))]
                     )
-            except:
+            except sg.PopupError:
                 sg.PopupError("Can not be deleted at the moment", no_titlebar=True, keep_on_top=True)
 
-    if event == "Open Location":
+    elif event == "Open Location":
         os.popen("explorer " + dirs[0])
-    if play.current is not None:
-        asyncio.run(play.current.update_song())
-        gui_window.find_element("_now_playing_").Update(play.current.song)
-    if play.current is not None and (event == "_equalizer_preset_" or '_eq_band' in event):
-        play.current.set_equalizer([values['_eq_band_%s' % i] for i in range(10)])
-    if play.current is not None and event == "_load_equalizer_":
-        play.current.set_equalizer([values['_eq_band_%s' % i] for i in range(10)])
-    if event == "Refresh":
+
+    elif event == "Refresh":
         gui_window['_records_list_'].update(
             [[get_records()[i][k] for k in range(len(get_records()[i]))] for i in range(len(get_records()))]
         )
+
+    if play.current is not None:
+        asyncio.run(play.current.update_song())
+        gui_window["_now_playing_"].Update(play.current.song)
+
+        if event == "_equalizer_preset_" or '_eq_band' in event:
+            play.current.set_equalizer([values['_eq_band_%s' % i] for i in range(10)])
+
+        elif  event == "_set_mute_":
+            config.set("Settings", "muted", str(values['_set_mute_']))
+            play.current.set_mute(values['_set_mute_'])
+        elif event == "_set_master_volume_":
+            play.current.set_master_volume(values['_set_master_volume_'])
+        #elif event == "_test_function_":
+        #    play.current.test_function()
+        elif event == "_load_equalizer_":
+            play.current.set_equalizer([values['_eq_band_%s' % i] for i in range(10)])
+
+
