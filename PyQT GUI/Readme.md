@@ -1,10 +1,11 @@
 
-  
-  
+
+
 The program is a good example of how to use the <a target="_blank" href="https://www.olivieraubert.net/vlc/python-ctypes/doc/">VLC library</a>, <a href="https://www.python.org/" target="_blank">Python</a> and <a target="_blank" href="https://pypi.org/project/PySimpleGUIQt/">Pysimplegui</a> to create a good looking desktop radio application. 
 
 It uses the https://pypi.org/project/python-vlc/ library and some of the main interfaces provided such as spectrum analyser, equaliser, audio filters, preamplifier, downloading and streaming live youtube channels, local files and radio stations.
 
+Video: https://www.youtube.com/watch?v=KFeTPMDxn70
 
   <h4>Features</h4>
   <ul>
