@@ -1,5 +1,4 @@
 import os.path
-import time
 from datetime import datetime
 import configparser
 import PySimpleGUI
@@ -24,6 +23,10 @@ vlc_config = \
             --effect-width=70
             --effect-height=50
             --spect-color=127
+            --no-spect-show-bands
+            --no-video
+            --no-xlib
+            --spect-radius=20
     """
 
 dirs = ["Download", "Settings"]
@@ -117,9 +120,10 @@ def get_records() -> list:
     files_data = []
     for each_file in files:
         data = each_file.split(".")[0].split("-")
-        if len(data) == 5:
-            files_data.append([data[0], data[1], data[2], data[3], data[4], each_file])
+
+        files_data.append([data[0], data[1], data[2], data[3], data[4], each_file])
     files_data.sort(reverse=True)
+
     if len(files_data) == 0:
         return [["" for i in range(3)]]
     else:
@@ -165,7 +169,7 @@ class Radios:
         :param st_filter: Reads the search field from the GUI and sort the table based on the string
 
         """
-        sort  = 0 if st_sort_by == "Name" else 1 if  st_sort_by == "Genre" else 2
+        sort = 0 if st_sort_by == "Name" else 1 if st_sort_by == "Genre" else 2
         if len(st_filter.strip()) > 0:
             self.temporary_list = [self.all_list[i] for i in range(len(self.all_list)) if
                                    st_filter.lower() in self.all_list[i][sort].lower()]
@@ -222,7 +226,7 @@ fav_layout = [[sg.Col(layout=[
         expand_y=True,
         headings=["Name            ", "Genre      ", "Country   "])
     ]
-], justification="center", expand_x=True, expand_y=True,)]]
+], justification="center", expand_x=True, expand_y=True, )]]
 
 records_layout = [[sg.Col(layout=[
     [sg.Table(
@@ -238,14 +242,15 @@ records_layout = [[sg.Col(layout=[
         expand_x=True,
         headings=["Radio          ", "Time      ", "Date        "])
     ]
-], justification="center", expand_x=True, expand_y=True,)]]
+], justification="center", expand_x=True, expand_y=True, )]]
 
 equalizer_layout = [sg.Col(layout=[
     [
-        #sg.Checkbox("Test", key="_test_function_", change_submits=True),
-        sg.Frame("Master",[
-            [sg.Checkbox("Mute", key="_set_mute_", change_submits=True, pad=(1, 5), default=config.getboolean("Settings", "muted"))],
-            [sg.Frame("Volume",[
+        # sg.Checkbox("Test", key="_test_function_", change_submits=True),
+        sg.Frame("Master", [
+            [sg.Checkbox("Mute", key="_set_mute_", change_submits=True, pad=(1, 5),
+                         default=config.getboolean("Settings", "muted"))],
+            [sg.Frame("Volume", [
                 [sg.Slider(
                     range=(0, 100),
                     default_value=100,
@@ -259,39 +264,39 @@ equalizer_layout = [sg.Col(layout=[
                 )
                 ]
             ], pad=(5, 10), background_color="#037080", font="Helvetica, 8", expand_y=True)]
-        ], pad=(10, 10),expand_y=True, background_color="#282A2F", element_justification ="c"),
+        ], pad=(10, 10), expand_y=True, background_color="#282A2F", element_justification="c"),
         sg.Frame("Equalizer", layout=[
-        [sg.Col([[
-            sg.T("Preset EQ"),
-            sg.DropDown(
-                values=[preset_equalizers[i][0] for i, values in enumerate(preset_equalizers)],
-                readonly=True,
-                change_submits=True,
-                bind_return_key=True,
-                enable_events=True,
-                key="_equalizer_preset_",
-                size=(20, 1),
-                default_value="Flat")
-        ]]),
-            sg.B("Save", key="_save_equalizer_"),
-            sg.B("Load", key="_load_equalizer_"),
-        ],
-        [sg.Frame(band_params[i], layout=[
-            [
-                sg.Slider(
-                    range=(0, 20),
-                    size=(10, 15),
-                    default_value=float(get_list(config.get("Settings", "saved_equalizer"))[i]),
-                    orientation="v",
+            [sg.Col([[
+                sg.T("Preset EQ"),
+                sg.DropDown(
+                    values=[preset_equalizers[i][0] for i, values in enumerate(preset_equalizers)],
+                    readonly=True,
                     change_submits=True,
-                    text_color="#00A615",
-                    font="Helvetica, 11",
-                    pad=(2, 2),
-                    key="_eq_band_%s" % i)
-            ]
-        ], pad=(5, 10), background_color="#037080", font="Helvetica, 8") for i in range(10)
-         ]
-    ], size=(100, 20), element_justification="center", background_color="#282A2F", pad=(10, 10))]
+                    bind_return_key=True,
+                    enable_events=True,
+                    key="_equalizer_preset_",
+                    size=(20, 1),
+                    default_value="Flat")
+            ]]),
+                sg.B("Save", key="_save_equalizer_"),
+                sg.B("Load", key="_load_equalizer_"),
+            ],
+            [sg.Frame(band_params[i], layout=[
+                [
+                    sg.Slider(
+                        range=(0, 20),
+                        size=(10, 15),
+                        default_value=float(get_list(config.get("Settings", "saved_equalizer"))[i]),
+                        orientation="v",
+                        change_submits=True,
+                        text_color="#00A615",
+                        font="Helvetica, 11",
+                        pad=(2, 2),
+                        key="_eq_band_%s" % i)
+                ]
+            ], pad=(5, 10), background_color="#037080", font="Helvetica, 8") for i in range(10)
+             ]
+        ], size=(100, 20), element_justification="center", background_color="#282A2F", pad=(10, 10))]
 ], justification="center", element_justification="center", pad=(10, 10))]
 
 play_layout = [[sg.Col([
@@ -315,12 +320,12 @@ play_layout = [[sg.Col([
                                         text_color="#1D95A7"
                                     )
                                 ]], element_justification="left", expand_x=True),
-                                sg.Col([[                                sg.B(image_data=images.record, image_size=(40, 40), key="_record_radio_",
-                                     button_color=("#E5E5E5", "#81352A"),
-                                     disabled=True),
-                                sg.B(image_data=images.stop, image_size=(40, 40), key="_stop_radio_",
-                                     button_color=("#E5E5E5", "#000"),
-                                     disabled=True)]], element_justification="right")
+                                sg.Col([[sg.B(image_data=images.record, image_size=(40, 40), key="_record_radio_",
+                                              button_color=("#E5E5E5", "#81352A"),
+                                              disabled=True),
+                                         sg.B(image_data=images.stop, image_size=(40, 40), key="_stop_radio_",
+                                              button_color=("#E5E5E5", "#000"),
+                                              disabled=True)]], element_justification="right")
                             ]
                         ], expand_x=True, key="_currently_playing_")
                     ]
@@ -361,11 +366,12 @@ play_layout = [[sg.Col([
             justification="left",
             key="_radios_list_",
             row_height=30,
+            right_click_menu=["&", ['Add to favourites', 'Refresh Radios']],
             expand_x=True,
             num_rows=40,
             headings=["Name", "Genre", "Country"])
         ]
-    ], expand_x=True,)],
+    ], expand_x=True, )],
 ], element_justification="center", expand_x=True)]]
 
 tabs = [[sg.TabGroup(layout=[[
@@ -376,13 +382,12 @@ tabs = [[sg.TabGroup(layout=[[
 ]], expand_x=True)]]
 
 gui_window = sg.Window(
-    "ZEDiO     🎧 v1.1 @r00tme   🕑 31/12/2021     ",
+    "ZEDiO     🎧 v1.1 @r00tme  🕑 31/12/2021     ",
     text_justification="center",
     auto_size_text=True,
     return_keyboard_events=True,
     keep_on_top=True,
     icon="ico.ico",
-    right_click_menu=["&", ['Add to favourites', 'Refresh Radios']],
     alpha_channel=0.9,
     size=(870, 600),
     titlebar_background_color="Red",
@@ -392,6 +397,7 @@ gui_window = sg.Window(
     finalize=True,
     layout=tabs
 )
+
 
 def save_equalizer(values: sg.ObjToString) -> None:
     """
@@ -407,9 +413,11 @@ def save_equalizer(values: sg.ObjToString) -> None:
     config.set(dirs[1], "saved_equalizer", new_eq)
     save_config()
 
+
 def save_config():
     with open(os.path.join(dirs[1], "settings.ini"), 'w') as configfile:
         config.write(configfile)
+
 
 def add_favourite(radio_data: list):
     """
@@ -422,7 +430,7 @@ def add_favourite(radio_data: list):
     gui_window['_fav_radios_list_'].update([[i[0], i[1], i[2]] for i in fav_radios.temporary_list])
 
 
-def play_radio(values_str: str, record = False) -> None:
+def play_radio(values_str: str, record=False) -> None:
     """
     Plays the selected radio and updates the main gui buttons
     :param values_str: GUI event object
@@ -498,7 +506,8 @@ class Media:
             else:
                 self.__media = self.__instance.media_new(
                     url.strip(), "sout=#duplicate{dst=file{dst=" + dirs[0] + "/%s-%s.mp3},dst=display}"
-                                 % (self.selected_radio[0], datetime.now().strftime("%d %b %Y-%H-%M-%S"))
+                                 % (
+                                 self.selected_radio[0].replace("-", " "), datetime.now().strftime("%d %b %Y-%H-%M-%S"))
                 )
         else:
             self.__media = self.__instance.media_new(url.strip())
@@ -507,8 +516,9 @@ class Media:
         self.__record = record
 
     async def update_song(self):
-        await asyncio.sleep(0.1)
-        self.song = "Unknown song" if self.__media.get_meta(12) is None else self.__media.get_meta(12)
+        if self.__media is not None:
+            await asyncio.sleep(0.1)
+            self.song = "Unknown song" if self.__media.get_meta(12) is None else self.__media.get_meta(12)
 
     def radio_start(self) -> None:
         """
@@ -552,12 +562,12 @@ class Media:
                 self.__media.get_mrl()
                 self.__media.parse()
 
-    def test_function(self):
-        #self.__media.add_option("--audio-filter=Gain --gain-value=%.2f" % -34)
-        #print(self.__instance.audio_filter_list_get())
-        self.__equalizer.release()
-        self.__equalizer.set_preamp()
-        print(self.__equalizer.get_preamp())
+    # def test_function(self):
+    #    self.__media.add_option("--audio-filter=Gain --gain-value=%.2f" % -34)
+    #    print(self.__instance.audio_filter_list_get())
+    #    self.__equalizer.release()
+    #    self.__equalizer.set_preamp()
+    #    print(self.__equalizer.get_preamp())
 
     def set_master_volume(self, volume: int):
         player.libvlc_audio_set_volume(self.__player, int(volume))
@@ -616,9 +626,8 @@ class Play:
         if self.current is not None:
             self.current.radio_stop()
 
+
 play = Play()
-
-
 
 while True:
     event, values = gui_window.Read(timeout=3000)
@@ -630,7 +639,6 @@ while True:
         gui_window["_radios_list_"].Update(radios.filter(values['_search_name_'], values['_sort_by_']))
     except PySimpleGUI.ErrorElement:
         continue
-
 
     if event == "_equalizer_preset_":
         get_equalizer = [preset_equalizers[i][1] for i in range(len(preset_equalizers)) if
@@ -707,22 +715,31 @@ while True:
                 play_radio("_records_list_", record=True)
         elif event in ["Delete record", "Delete:46"]:
             try:
-                playing = False
                 if play.current is not None:
                     if play.current.selected_radio[3] == selected_record[3]:
-                        sg.PopupError("Can not delete radio while playing", no_titlebar=True, keep_on_top=True)
-                if os.path.isfile(selected_record[3]) and not playing:
-                    os.remove(selected_record[3])
-                    gui_window['_records_list_'].update(
-                        [[get_records()[i][k] for k in range(len(get_records()[i]))] for i in range(len(get_records()))]
-                    )
+                        play.current.radio_stop()
+
+                if sg.popup_yes_no(
+                        "Are you sure that you want to delete that record",
+                        no_titlebar=True,
+                        keep_on_top=True
+                ):
+
+                    if os.path.isfile(selected_record[3]):
+                        os.remove(selected_record[3])
+                        gui_window['_records_list_'].update(
+                            [
+                                [get_records()[i][k] for k in range(len(get_records()[i]))]
+                                for i in range(len(get_records()))
+                            ]
+                        )
             except sg.PopupError:
                 sg.PopupError("Can not be deleted at the moment", no_titlebar=True, keep_on_top=True)
 
-    elif event == "Open Location":
+    if event == "Open Location":
         os.popen("explorer " + dirs[0])
 
-    elif event == "Refresh":
+    if event == "Refresh":
         gui_window['_records_list_'].update(
             [[get_records()[i][k] for k in range(len(get_records()[i]))] for i in range(len(get_records()))]
         )
@@ -734,14 +751,12 @@ while True:
         if event == "_equalizer_preset_" or '_eq_band' in event:
             play.current.set_equalizer([values['_eq_band_%s' % i] for i in range(10)])
 
-        elif  event == "_set_mute_":
+        elif event == "_set_mute_":
             config.set("Settings", "muted", str(values['_set_mute_']))
             play.current.set_mute(values['_set_mute_'])
         elif event == "_set_master_volume_":
             play.current.set_master_volume(values['_set_master_volume_'])
-        #elif event == "_test_function_":
+        # elif event == "_test_function_":
         #    play.current.test_function()
         elif event == "_load_equalizer_":
             play.current.set_equalizer([values['_eq_band_%s' % i] for i in range(10)])
-
-
