@@ -4,14 +4,14 @@ It usses libvlc.dll (VLC) API to play the audio streams and youtube-dl for video
 
 
 
-Video: https://vimeo.com/571840927
+Video: https://www.youtube.com/watch?v=KFeTPMDxn70
 
 <p>
 <b>Using PySimpleGui</b><hr>
 <table>
   <tr>
-    <td><img src="https://i.gyazo.com/a50d63d8533242d7bc90cf14b3bdd771.png"></td>
-    <td><img src="https://i.gyazo.com/854ef919857a89d9f18164e055c78787.png"></td>
+    <td><img src="https://i.gyazo.com/26ba304495b772bcf4efec9149a7ea3d.png"></td>
+    <td><img src="https://i.gyazo.com/299cfd9193ff6d6aa0c27c93e1bb45dd.png"></td>
   </tr>
 </table>
 </p>
