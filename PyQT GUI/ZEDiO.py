@@ -296,7 +296,7 @@ equalizer_layout = [sg.Col(layout=[
                 ]
             ], pad=(5, 10), background_color="#037080", font="Helvetica, 8") for i in range(10)
              ]
-        ], size=(100, 20), element_justification="center", background_color="#282A2F", pad=(10, 10))]
+        ], element_justification="center", background_color="#282A2F", pad=(10, 10))]
 ], justification="center", element_justification="center", pad=(10, 10))]
 
 play_layout = [[sg.Col([
