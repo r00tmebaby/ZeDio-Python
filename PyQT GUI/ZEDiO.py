@@ -464,6 +464,33 @@ def play_radio(values_str: str, record=False) -> None:
     gui_window["_stop_radio_"].Update(disabled=False)
     gui_window["_record_radio_"].Update(disabled=False)
 
+def parse_headers(response):
+    headers = {}
+    while True:
+        line = response.readline()
+        if line == '\r\n':
+            break # end of headers
+        if ':' in line:
+            key, value = line.split(':', 1)
+            headers[key] = value
+    return headers
+
+def poll_radio(url):
+    request = urllib2.Request(url, headers = {
+        'User-Agent' : 'User-Agent: VLC/2.0.5 LibVLC/2.0.5',
+        'Icy-MetaData' : '1',
+        'Range' : 'bytes=0-',
+    })
+    with contextlib.closing(urllib2.urlopen(request)) as response:
+
+        headers = parse_headers(response)
+
+        meta_interval = int(headers['icy-metaint'])
+        response.read(meta_interval) # throw away the data until the meta interval
+
+        length = ord(response.read(1)) * 16 # length is encoded in the stream
+        metadata = response.read(length)
+        print(metadata)
 
 class Media:
     __instance = player.Instance(vlc_config)
