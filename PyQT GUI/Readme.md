@@ -23,6 +23,22 @@ Video: https://www.youtube.com/watch?v=KFeTPMDxn70
   </ul>
 
 
+<h2>A simple radio program that can play and record your favourite radio stations as well as youtube live streams </h2>
+
+It usses libvlc.dll (VLC) API to play the audio streams and youtube-dl for videos.
+
+
+
+Video: https://www.youtube.com/watch?v=KFeTPMDxn70
+
+<table>
+  <tr>
+    <td><img src="https://i.gyazo.com/26ba304495b772bcf4efec9149a7ea3d.png"></td>
+    <td><img src="https://i.gyazo.com/299cfd9193ff6d6aa0c27c93e1bb45dd.png"></td>
+  </tr>
+</table>
+
+
 
 <h4><b>Creating Executable</b></h4>
 <hr>
