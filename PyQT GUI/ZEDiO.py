@@ -157,7 +157,7 @@ class Radios:
             if len(i.strip()) > 0:
                 cols = i.split(",")
                 if len(cols) == 5:
-                    temp_radio_list.append(cols)
+                    temp_radio_list.append([i.strip() for i in cols])
 
         self.all_list = temp_radio_list
         self.temporary_list = self.all_list.sort(key=name)
@@ -165,7 +165,7 @@ class Radios:
     def filter(self, st_filter: str = "", st_sort_by: str = "") -> None:
         """
         Use the search field to sort the temporary list by names
-
+        :st_sort_by: str
         :param st_filter: Reads the search field from the GUI and sort the table based on the string
 
         """
@@ -301,7 +301,15 @@ equalizer_layout = [sg.Col(layout=[
 
 play_layout = [[sg.Col([
     [sg.Col(
-        [[sg.Image(data=images.zedio, key="_radio_logo_", expand_y=True, expand_x=True)]], background_color="#282A2F"),
+        [
+            [sg.Image(data=images.zedio, key="_radio_logo_", expand_x=True, expand_y=True)]
+        ],
+        justification="center",
+        expand_x=True,
+        expand_y=True,
+        element_justification="center",
+        background_color="#282A2F"
+    ),
         sg.Col([
             [sg.Col(
                 [
@@ -464,33 +472,35 @@ def play_radio(values_str: str, record=False) -> None:
     gui_window["_stop_radio_"].Update(disabled=False)
     gui_window["_record_radio_"].Update(disabled=False)
 
+
 def parse_headers(response):
     headers = {}
     while True:
         line = response.readline()
         if line == '\r\n':
-            break # end of headers
+            break  # end of headers
         if ':' in line:
             key, value = line.split(':', 1)
             headers[key] = value
     return headers
 
+
 def poll_radio(url):
-    request = urllib2.Request(url, headers = {
-        'User-Agent' : 'User-Agent: VLC/2.0.5 LibVLC/2.0.5',
-        'Icy-MetaData' : '1',
-        'Range' : 'bytes=0-',
+    request = urllib2.Request(url, headers={
+        'User-Agent': 'User-Agent: VLC/2.0.5 LibVLC/2.0.5',
+        'Icy-MetaData': '1',
+        'Range': 'bytes=0-',
     })
     with contextlib.closing(urllib2.urlopen(request)) as response:
-
         headers = parse_headers(response)
 
         meta_interval = int(headers['icy-metaint'])
-        response.read(meta_interval) # throw away the data until the meta interval
+        response.read(meta_interval)  # throw away the data until the meta interval
 
-        length = ord(response.read(1)) * 16 # length is encoded in the stream
+        length = ord(response.read(1)) * 16  # length is encoded in the stream
         metadata = response.read(length)
         print(metadata)
+
 
 class Media:
     __instance = player.Instance(vlc_config)
@@ -534,7 +544,8 @@ class Media:
                 self.__media = self.__instance.media_new(
                     url.strip(), "sout=#duplicate{dst=file{dst=" + dirs[0] + "/%s-%s.mp3},dst=display}"
                                  % (
-                                 self.selected_radio[0].replace("-", " "), datetime.now().strftime("%d %b %Y-%H-%M-%S"))
+                                     self.selected_radio[0].replace("-", " "),
+                                     datetime.now().strftime("%d %b %Y-%H-%M-%S"))
                 )
         else:
             self.__media = self.__instance.media_new(url.strip())
