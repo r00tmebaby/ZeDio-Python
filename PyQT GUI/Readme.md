@@ -1,5 +1,11 @@
 
 
+<table>
+  <tr>
+    <td><img src="https://i.gyazo.com/26ba304495b772bcf4efec9149a7ea3d.png"></td>
+    <td><img src="https://i.gyazo.com/299cfd9193ff6d6aa0c27c93e1bb45dd.png"></td>
+  </tr>
+</table>
 
 The program is a good example of how to use the <a target="_blank" href="https://www.olivieraubert.net/vlc/python-ctypes/doc/">VLC library</a>, <a href="https://www.python.org/" target="_blank">Python</a> and <a target="_blank" href="https://pypi.org/project/PySimpleGUIQt/">Pysimplegui</a> to create a good looking desktop radio application. 
 
@@ -30,15 +36,6 @@ It usses libvlc.dll (VLC) API to play the audio streams and youtube-dl for video
 
 
 Video: https://www.youtube.com/watch?v=KFeTPMDxn70
-
-<table>
-  <tr>
-    <td><img src="https://i.gyazo.com/26ba304495b772bcf4efec9149a7ea3d.png"></td>
-    <td><img src="https://i.gyazo.com/299cfd9193ff6d6aa0c27c93e1bb45dd.png"></td>
-  </tr>
-</table>
-
-
 
 <h4><b>Creating Executable</b></h4>
 <hr>
