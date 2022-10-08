@@ -3,7 +3,7 @@ import configparser
 import os.path
 from datetime import datetime
 from sys import platform as PLATFORM
-
+import webbrowser
 import pafy
 import PySimpleGUI
 import PySimpleGUI as sg
@@ -481,14 +481,12 @@ play_layout = [
                                                                         size=(60, 40),
                                                                         background_color="Black",
                                                                     ),
-                                                                    sg.T(
-                                                                        "  ",
+                                                                    sg.B(
                                                                         key="_now_playing_",
-                                                                        justification="left",
-                                                                        expand_x=True,
+                                                                        enable_events=True,
                                                                         expand_y=True,
+                                                                        size=(45, 1),
                                                                         font="Courier, 12",
-                                                                        text_color="#1D95A7",
                                                                     ),
                                                                 ]
                                                             ],
@@ -551,6 +549,7 @@ play_layout = [
                                                         sg.I(
                                                             key="_search_name_",
                                                             size=(20, 1),
+                                                            expand_x=True
                                                         ),
                                                         sg.T("Sort by"),
                                                         sg.DropDown(
@@ -647,7 +646,7 @@ gui_window = sg.Window(
     icon="ico.ico",
     alpha_channel=0.9,
     return_keyboard_events=True,
-    size=(750, 700),
+    size=(850, 700),
     titlebar_background_color="Red",
     titlebar_text_color="Red",
     use_default_focus=False,
@@ -712,7 +711,7 @@ class Media:
     selected_radio = None
     v_player = None
 
-    song = "..."
+    song = "Loading..."
 
     def __init__(self, url: str, record=False, flat_file=False):
         """
@@ -746,7 +745,7 @@ class Media:
                     + dirs[0]
                     + "/%s-%s.mp3},dst=display}"
                     % (
-                        self.selected_radio[0].replace("-", " "),
+                        self.selected_radio[0].replace("-", " ").replace(".", ""),
                         datetime.now().strftime("%d %b %Y-%H-%M-%S"),
                     ),
                 )
@@ -927,14 +926,14 @@ async def play_radio(values_str: str, values, record=False) -> None:
         "Listening to %s" % Media.selected_radio[0]
     )
     gui_window["_now_playing_"].update("%s" % play.current.song)
-    gui_window["_now_playing_"].Update(text_color="#1D95A7")
+
     gui_window["_stop_radio_"].Update(disabled=False)
     gui_window["_record_radio_"].Update(disabled=False)
 
 
 async def zed_radio():
     while True:
-        event, values = gui_window.Read()
+        event, values = gui_window.Read(timeout=3000)
 
         if event == sg.WIN_CLOSED:
             gui_window.Close()
@@ -946,6 +945,8 @@ async def zed_radio():
         except PySimpleGUI.ErrorElement:
             continue
 
+        await update_gui(values)
+
         if event == "_equalizer_preset_":
             get_equalizer = [
                 preset_equalizers[i][1]
@@ -954,10 +955,11 @@ async def zed_radio():
             ][0]
             for i, res in enumerate(get_equalizer):
                 gui_window["_eq_band_%s" % i].update(int(res))
-
-        await update_gui(values)
-
-        if (
+        elif event == "_now_playing_":
+            print(1)
+            if play.current:
+                webbrowser.open(f"https://www.youtube.com/results?search_query={play.current.song}")
+        elif (
                 event == "_fav_radios_list_"
                 and len(values["_fav_radios_list_"]) == 1
                 and fav_radios.temporary_list
@@ -983,6 +985,7 @@ async def zed_radio():
         elif event == "Add to favourites" and len(values["_radios_list_"]) == 1:
             add_favourite(radios.temporary_list[values["_radios_list_"][0]])
         elif event == "_add_new_radio_":
+            gui_window["_now_playing_"].Update(play.current.song)
             if (
                     len(values["_add_radio_name_"]) > 1
                     and len(values["_add_radio_link_"]) > 10
@@ -1000,16 +1003,10 @@ async def zed_radio():
                 )
         elif event == "_stop_radio_":
             await play.refresh()
-            gui_window["_now_playing_"].Update(text_color="#1D95A7")
             gui_window["_stop_radio_"].Update(disabled=True)
             gui_window["_record_radio_"].Update(disabled=True)
             gui_window["_now_playing_"].Update("")
             Media.selected_radio = None
-
-            # Fixme --
-            # for files in os.listdir("Download"):
-            #    if files.endswith(".mp4"):
-            #        convert_audio(os.path.join("Download", files), os.path.join("Download", files.replace(".mp4", "mp3")))
 
         elif event == "_save_equalizer_":
             save_equalizer(values)
@@ -1017,16 +1014,15 @@ async def zed_radio():
             if Media.selected_radio is not None:
                 await play.refresh()
                 play.current = Media(play.current.selected_radio[3], record=True)
-                asyncio.create_task(play.current.radio_start())
-
-                gui_window["_now_playing_"].Update(text_color="#E96767")
+                await play.current.radio_start()
                 gui_window["_stop_radio_"].Update(disabled=False)
                 gui_window["_record_radio_"].Update(disabled=True)
+
         elif len(values["_records_list_"]) == 1:
             selected_record = get_records()[values["_records_list_"][0]]
             if event == "_records_list_":
                 if get_records()[values["_records_list_"][0]][0] != "":
-                    asyncio.create_task(play_radio("_records_list_", values, record=True))
+                    await play_radio("_records_list_", values, record=True)
             elif event in ["Delete record", "Delete:46"]:
                 try:
                     if play.current is not None:
@@ -1057,10 +1053,10 @@ async def zed_radio():
                         keep_on_top=True,
                     )
 
-        if event == "Open Location":
+        elif event == "Open Location":
             os.popen("explorer " + dirs[0])
 
-        if event == "Refresh":
+        elif event == "Refresh":
             gui_window["_records_list_"].update(
                 [
                     [get_records()[i][k] for k in range(len(get_records()[i]))]
@@ -1068,24 +1064,25 @@ async def zed_radio():
                 ]
             )
 
-        if play.current is not None:
-            await asyncio.threads.to_thread(play.current.update_song)
-            gui_window["_now_playing_"].Update(play.current.song)
+        else:
+            if play.current is not None:
+                await asyncio.threads.to_thread(play.current.update_song)
+                gui_window["_now_playing_"].Update(play.current.song)
 
-            if event == "_equalizer_preset_" or "_eq_band" in event:
-                await play.current.set_equalizer(
-                    [values["_eq_band_%s" % i] for i in range(10)]
-                )
+                if event == "_equalizer_preset_" or "_eq_band" in event:
+                    await play.current.set_equalizer(
+                        [values["_eq_band_%s" % i] for i in range(10)]
+                    )
 
-            elif event == "_set_mute_":
-                config.set("Settings", "muted", str(values["_set_mute_"]))
-                await play.current.set_mute(values["_set_mute_"])
-            elif event == "_set_master_volume_":
-                await play.current.set_master_volume(values["_set_master_volume_"])
-            elif event == "_load_equalizer_":
-                await play.current.set_equalizer(
-                    [values["_eq_band_%s" % i] for i in range(10)]
-                )
+                elif event == "_set_mute_":
+                    config.set("Settings", "muted", str(values["_set_mute_"]))
+                    await play.current.set_mute(values["_set_mute_"])
+                elif event == "_set_master_volume_":
+                    await play.current.set_master_volume(values["_set_master_volume_"])
+                elif event == "_load_equalizer_":
+                    await play.current.set_equalizer(
+                        [values["_eq_band_%s" % i] for i in range(10)]
+                    )
 
 
 if __name__ == "__main__":
