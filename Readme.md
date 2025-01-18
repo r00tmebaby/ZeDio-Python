@@ -1,13 +1,9 @@
-<h2>A simple radio program that can play and record your favourite radio stations as well as youtube live streams </h2>
-
-It uses libvlc.dll (VLC) API to play the audio streams and youtube-dl for videos.
-
-Video: https://www.youtube.com/watch?v=KFeTPMDxn70
-
 # 🎵 Zed Radio - The Ultimate Radio Experience
 
 Zed Radio is a feature-rich Python application that combines modern GUI design with a powerful audio playback system. It allows you to enjoy online radio, manage your favorite stations, record streams, and customize audio settings with an integrated equalizer.
 
+## 📹Video
+https://www.youtube.com/watch?v=KFeTPMDxn70
 ---
 
 ## ✨ Features
@@ -136,12 +132,6 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ---
 
-## 📧 Contact
-
-For any inquiries or feedback:
-
-- Email: your.email@example.com
-- GitHub: [yourusername](https://github.com/yourusername)
 
 ---
 
